@@ -139,4 +139,62 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// Portal-specific stats
+router.get('/portal-stats', async (req, res) => {
+  try {
+    const [recentLogins, returningGuests, portalStats] = await Promise.all([
+      // Recent portal logins (last 50)
+      pool.query(`
+        SELECT g.email, g.first_name, g.last_name, g.total_visits,
+               v.mac, v.ssid, v.start_time, v.ap_name
+        FROM visits v
+        JOIN guests g ON v.guest_id = g.id
+        WHERE v.auth_method = 'portal'
+        ORDER BY v.start_time DESC
+        LIMIT 50
+      `),
+      
+      // Returning guests (more than 1 visit via portal)
+      pool.query(`
+        SELECT g.email, g.first_name, g.last_name, g.total_visits,
+               g.first_seen, g.last_seen,
+               m.mac
+        FROM guests g
+        LEFT JOIN mac_addresses m ON m.guest_id = g.id
+        WHERE g.total_visits > 1
+        ORDER BY g.total_visits DESC, g.last_seen DESC
+        LIMIT 50
+      `),
+      
+      // Aggregate portal stats
+      pool.query(`
+        SELECT 
+          COUNT(DISTINCT g.id) as total_portal_guests,
+          COUNT(DISTINCT CASE WHEN g.total_visits > 1 THEN g.id END) as returning_count,
+          ROUND(AVG(g.total_visits)::numeric, 1) as avg_visits,
+          COUNT(DISTINCT m.mac) as unique_devices
+        FROM guests g
+        LEFT JOIN mac_addresses m ON m.guest_id = g.id
+        WHERE EXISTS (SELECT 1 FROM visits v WHERE v.guest_id = g.id AND v.auth_method = 'portal')
+      `)
+    ]);
+    
+    const stats = portalStats.rows[0];
+    res.json({
+      recentLogins: recentLogins.rows,
+      returningGuests: returningGuests.rows,
+      totalPortalGuests: parseInt(stats.total_portal_guests) || 0,
+      returningCount: parseInt(stats.returning_count) || 0,
+      returningPercent: stats.total_portal_guests > 0 
+        ? Math.round((stats.returning_count / stats.total_portal_guests) * 100) 
+        : 0,
+      avgVisits: parseFloat(stats.avg_visits) || 0,
+      uniqueDevices: parseInt(stats.unique_devices) || 0
+    });
+  } catch (err) {
+    console.error('Portal stats error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

@@ -57,6 +57,18 @@ async function initDb() {
       CREATE INDEX IF NOT EXISTS idx_visits_start_time ON visits(start_time);
       CREATE INDEX IF NOT EXISTS idx_visits_ssid ON visits(ssid);
       CREATE INDEX IF NOT EXISTS idx_guests_email ON guests(email);
+
+      CREATE TABLE IF NOT EXISTS mac_addresses (
+        id SERIAL PRIMARY KEY,
+        mac VARCHAR(50) UNIQUE NOT NULL,
+        guest_id INTEGER REFERENCES guests(id),
+        device_name VARCHAR(255),
+        first_seen TIMESTAMPTZ DEFAULT NOW(),
+        last_seen TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_mac_addresses_mac ON mac_addresses(mac);
+      CREATE INDEX IF NOT EXISTS idx_mac_addresses_guest_id ON mac_addresses(guest_id);
     `);
   } finally {
     client.release();

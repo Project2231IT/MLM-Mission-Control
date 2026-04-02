@@ -9,6 +9,7 @@ const uploadRoutes = require('./routes/upload');
 const dashboardRoutes = require('./routes/dashboard');
 const exportRoutes = require('./routes/export');
 const apiRoutes = require('./routes/api');
+const portalRoutes = require('./routes/portal');
 
 const app = express();
 const PORT = process.env.PORT || 3700;
@@ -23,16 +24,15 @@ app.use(session({
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Portal routes - NO auth required (guests use these)
+app.use('/portal', portalRoutes);
 
-// Routes
-app.use('/auth', authRoutes);
-app.use('/api/upload', authMiddleware, uploadRoutes);
-app.use('/api/dashboard', authMiddleware, dashboardRoutes);
-app.use('/api/export', authMiddleware, exportRoutes);
-app.use('/api', authMiddleware, apiRoutes);
+// Serve login page (public, no auth)
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 
-// Serve main page
+// Protect index.html and all other pages behind auth
 app.get('/', (req, res) => {
   if (!req.session.authenticated) {
     return res.redirect('/login');
@@ -40,9 +40,36 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/login', (req, res) => {
+app.get('/index.html', (req, res) => {
+  if (!req.session.authenticated) {
+    return res.redirect('/login');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Static files - serve login assets and logos publicly, protect everything else
+app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
+app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
+app.use('/logos', express.static(path.join(__dirname, 'public', 'logos')));
+app.use('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
+
+// All other static files require auth
+app.use((req, res, next) => {
+  if (req.session.authenticated) {
+    return express.static(path.join(__dirname, 'public'))(req, res, next);
+  }
+  res.redirect('/login');
+});
+
+// Routes
+app.use('/auth', authRoutes);
+app.use('/api/upload', authMiddleware, uploadRoutes);
+app.use('/api/dashboard', authMiddleware, dashboardRoutes);
+app.use('/api/export', authMiddleware, exportRoutes);
+app.use('/api', authMiddleware, apiRoutes);
 
 async function start() {
   try {

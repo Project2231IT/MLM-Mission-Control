@@ -1,0 +1,56 @@
+{
+  "cameras": [
+    {
+      "id": "tcf-front-door-2",
+      "nvrId": "nvr-1773071079617",
+      "channel": 4,
+      "name": "Front Door 2",
+      "group": "tcf",
+      "direction": "entry",
+      "ip": "172.16.1.15",
+      "port": 80,
+      "username": "rosie",
+      "password": "rosie@123",
+      "protocol": "lapi"
+    },
+    {
+      "id": "dock17-front-entrance",
+      "nvrId": "nvr-1773072476322",
+      "channel": 5,
+      "name": "D17 Front Entrance",
+      "group": "dock17",
+      "direction": "entry",
+      "ip": "172.22.1.10",
+      "port": 80,
+      "username": "rosie",
+      "password": "rosie@123",
+      "protocol": "onvif"
+    },
+    {
+      "id": "dock17-entrance",
+      "nvrId": "nvr-1773072476322",
+      "channel": 13,
+      "name": "D17 Entrance",
+      "group": "dock17",
+      "direction": "entry",
+      "ip": "172.22.1.10",
+      "port": 80,
+      "username": "rosie",
+      "password": "rosie@123",
+      "protocol": "onvif"
+    },
+    {
+      "id": "mlc-cafe-dining-1",
+      "nvrId": "nvr-1773072688587",
+      "channel": 30,
+      "name": "Cafe Dining Room 1",
+      "group": "mlc",
+      "direction": "entry",
+      "ip": "172.25.2.10",
+      "port": 80,
+      "username": "rosie",
+      "password": "rosie@123",
+      "protocol": "onvif"
+    }
+  ]
+}

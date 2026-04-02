@@ -1,0 +1,59 @@
+{
+  "counts": {
+    "tcf": {
+      "today": "2026-03-30",
+      "entered": 0,
+      "exited": 0,
+      "intervals": {},
+      "lastUpdate": "2026-03-30T05:00:09.313746Z"
+    },
+    "dock17": {
+      "today": "2026-03-30",
+      "entered": 0,
+      "exited": 0,
+      "intervals": {},
+      "lastUpdate": "2026-03-30T05:00:10.257411Z"
+    },
+    "mlc": {
+      "today": "2026-03-30",
+      "entered": 0,
+      "exited": 0,
+      "intervals": {},
+      "lastUpdate": "2026-03-30T05:00:11.157623Z"
+    }
+  },
+  "cameraState": {
+    "dock17-front-entrance": {
+      "lastSnapshot": "2026-03-30T01:06:44.936947Z",
+      "totalEntered": 114,
+      "totalExited": 107,
+      "skippedFrames": 0,
+      "analyzedFrames": 221,
+      "lastCount": 0
+    },
+    "tcf-front-door-2": {
+      "lastSnapshot": "2026-03-30T02:26:46.556874Z",
+      "totalEntered": 1749,
+      "totalExited": 1481,
+      "skippedFrames": 0,
+      "analyzedFrames": 3230,
+      "lastCount": 0
+    },
+    "mlc-cafe-dining-1": {
+      "lastSnapshot": "2026-03-30T02:13:02.578087Z",
+      "totalEntered": 194,
+      "totalExited": 206,
+      "skippedFrames": 0,
+      "analyzedFrames": 400,
+      "lastCount": 0
+    },
+    "dock17-entrance": {
+      "lastSnapshot": "2026-03-30T00:12:08.686701Z",
+      "totalEntered": 70,
+      "totalExited": 58,
+      "skippedFrames": 0,
+      "analyzedFrames": 128,
+      "lastCount": 0
+    }
+  }
+}

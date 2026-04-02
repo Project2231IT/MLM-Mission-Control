@@ -1,0 +1,57 @@
+{
+  "tcf-front-door-1": {
+    "lineStart": {
+      "x": 0.72,
+      "y": 0.3
+    },
+    "lineEnd": {
+      "x": 0.88,
+      "y": 0.55
+    },
+    "entrySide": "right"
+  },
+  "tcf-front-door-2": {
+    "lineStart": {
+      "x": 0.14168377823408623,
+      "y": 0.2555366117335439
+    },
+    "lineEnd": {
+      "x": 0.7453798767967146,
+      "y": 0.3577512564269615
+    },
+    "entrySide": "above"
+  },
+  "dock17-front-entrance": {
+    "lineStart": {
+      "x": 0.08,
+      "y": 0.35
+    },
+    "lineEnd": {
+      "x": 0.35,
+      "y": 0.7
+    },
+    "entrySide": "right"
+  },
+  "dock17-entrance": {
+    "lineStart": {
+      "x": 0.17864476386036962,
+      "y": 0.37624718033637217
+    },
+    "lineEnd": {
+      "x": 0.27720739219712526,
+      "y": 0.018495923909410704
+    },
+    "entrySide": "left"
+  },
+  "mlc-cafe-dining-1": {
+    "lineStart": {
+      "x": 0.35523613963039014,
+      "y": 0.26308096656865987
+    },
+    "lineEnd": {
+      "x": 0.3757700205338809,
+      "y": 0.8690677886796354
+    },
+    "entrySide": "left"
+  }
+}

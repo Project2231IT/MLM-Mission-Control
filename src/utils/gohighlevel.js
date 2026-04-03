@@ -1,11 +1,13 @@
 /**
  * GoHighLevel CRM Integration
- * Pushes WiFi portal signups to GHL as contacts with tags
+ * Uses API v2 with Private Integration Token
+ * Uses Upsert endpoint to safely create/update contacts without duplicates
  */
 
 const GHL_API_KEY = process.env.GHL_API_KEY || '';
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || '';
 const GHL_BASE_URL = 'https://services.leadconnectorhq.com';
+const GHL_API_VERSION = '2021-07-28';
 
 // Business code → tag name mapping
 const BUSINESS_TAGS = {
@@ -18,12 +20,42 @@ const BUSINESS_TAGS = {
 };
 
 /**
- * Push a guest to GoHighLevel CRM
- * Creates new contact or updates existing one
+ * Make a GHL API request with proper headers
+ */
+async function ghlRequest(method, path, body = null) {
+  const opts = {
+    method,
+    headers: {
+      'Authorization': `Bearer ${GHL_API_KEY}`,
+      'Version': GHL_API_VERSION,
+      'Content-Type': 'application/json',
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+
+  const res = await fetch(`${GHL_BASE_URL}${path}`, opts);
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const errMsg = data?.message || data?.msg || res.statusText;
+    console.error(`GHL API ${method} ${path} → ${res.status}: ${errMsg}`);
+    return { ok: false, status: res.status, error: errMsg, data };
+  }
+
+  return { ok: true, status: res.status, data };
+}
+
+/**
+ * Push a guest to GoHighLevel CRM using Upsert (safe — no duplicates)
  */
 async function pushToGHL(guest) {
   if (!GHL_API_KEY) {
     console.log('GHL: No API key configured, skipping CRM push');
+    return null;
+  }
+
+  if (!GHL_LOCATION_ID) {
+    console.error('GHL: No Location ID configured (GHL_LOCATION_ID env var)');
     return null;
   }
 
@@ -44,20 +76,16 @@ async function pushToGHL(guest) {
 
     // Build tags
     const tags = ['WiFi-Guest'];
-    
+
     // Business tag
     if (business_code && BUSINESS_TAGS[business_code]) {
       tags.push(BUSINESS_TAGS[business_code]);
     }
 
     // New vs returning
-    if (is_returning) {
-      tags.push('WiFi-Returning');
-    } else {
-      tags.push('WiFi-New');
-    }
+    tags.push(is_returning ? 'WiFi-Returning' : 'WiFi-New');
 
-    // SMS opt-in
+    // SMS opt-in (only if they used phone AND checked the box)
     if (contact_method === 'phone' && marketing_optin) {
       tags.push('SMS-Optin');
     }
@@ -69,116 +97,37 @@ async function pushToGHL(guest) {
       tags.push('WiFi-Regular');
     }
 
-    // Build contact payload
+    // Build upsert payload
     const contactData = {
-      firstName: first_name || '',
-      lastName: last_name || '',
+      locationId: GHL_LOCATION_ID,
+      firstName: first_name || undefined,
+      lastName: last_name || undefined,
       tags: tags,
       source: 'WiFi Portal',
-      customField: [
-        { key: 'wifi_visits', field_value: String(total_visits || 1) },
-        { key: 'wifi_location', field_value: business_code || '' },
-        { key: 'wifi_mac', field_value: mac || '' },
-        { key: 'wifi_ssid', field_value: ssid || '' },
-      ],
     };
 
-    // Add email or phone based on contact method
+    // Add email or phone — phone must be E.164 format
     if (email) {
       contactData.email = email;
     }
     if (phone) {
-      contactData.phone = phone.startsWith('+') ? phone : '+1' + phone.replace(/\D/g, '');
+      const cleanPhone = phone.replace(/\D/g, '');
+      contactData.phone = cleanPhone.startsWith('1') ? '+' + cleanPhone : '+1' + cleanPhone;
     }
 
-    // Add location ID if configured
-    if (GHL_LOCATION_ID) {
-      contactData.locationId = GHL_LOCATION_ID;
-    }
+    // Use Upsert endpoint — safely creates or updates
+    const result = await ghlRequest('POST', '/contacts/upsert', contactData);
 
-    // First, try to find existing contact
-    let existingContact = null;
-    const searchField = email ? 'email' : 'phone';
-    const searchValue = email || (phone ? contactData.phone : '');
+    if (result.ok) {
+      const action = result.data?.new ? 'Created' : 'Updated';
+      console.log(`GHL: ${action} contact (${email || phone}) → ${result.data?.contact?.id || 'ok'}`);
 
-    if (searchValue) {
-      try {
-        const searchRes = await fetch(
-          `${GHL_BASE_URL}/contacts/search/duplicate?${searchField}=${encodeURIComponent(searchValue)}${GHL_LOCATION_ID ? '&locationId=' + GHL_LOCATION_ID : ''}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${GHL_API_KEY}`,
-              'Version': '2021-07-28',
-            },
-          }
-        );
-        if (searchRes.ok) {
-          const searchData = await searchRes.json();
-          if (searchData.contact) {
-            existingContact = searchData.contact;
-          }
-        }
-      } catch (e) {
-        console.log('GHL: Search failed, will try to create:', e.message);
-      }
-    }
-
-    let result;
-
-    if (existingContact) {
-      // Update existing contact - merge tags
-      const existingTags = existingContact.tags || [];
-      const mergedTags = [...new Set([...existingTags, ...tags])];
-      
-      // Remove WiFi-New if they're now returning
-      if (is_returning) {
-        const idx = mergedTags.indexOf('WiFi-New');
-        if (idx > -1) mergedTags.splice(idx, 1);
-      }
-
-      contactData.tags = mergedTags;
-
-      const updateRes = await fetch(
-        `${GHL_BASE_URL}/contacts/${existingContact.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${GHL_API_KEY}`,
-            'Content-Type': 'application/json',
-            'Version': '2021-07-28',
-          },
-          body: JSON.stringify(contactData),
-        }
-      );
-
-      if (updateRes.ok) {
-        result = await updateRes.json();
-        console.log(`GHL: Updated contact ${existingContact.id} (${email || phone})`);
-      } else {
-        const err = await updateRes.text();
-        console.error(`GHL: Update failed (${updateRes.status}):`, err);
-      }
-    } else {
-      // Create new contact
-      const createRes = await fetch(
-        `${GHL_BASE_URL}/contacts/`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${GHL_API_KEY}`,
-            'Content-Type': 'application/json',
-            'Version': '2021-07-28',
-          },
-          body: JSON.stringify(contactData),
-        }
-      );
-
-      if (createRes.ok) {
-        result = await createRes.json();
-        console.log(`GHL: Created contact (${email || phone})`);
-      } else {
-        const err = await createRes.text();
-        console.error(`GHL: Create failed (${createRes.status}):`, err);
+      // If this is a returning guest that was marked WiFi-New before, fix the tags
+      if (is_returning && result.data?.contact?.id) {
+        // Remove WiFi-New tag if it exists
+        await ghlRequest('DELETE', `/contacts/${result.data.contact.id}/tags`, {
+          tags: ['WiFi-New']
+        }).catch(() => {}); // Ignore errors
       }
     }
 
@@ -190,33 +139,39 @@ async function pushToGHL(guest) {
 }
 
 /**
- * Test GHL connection
+ * Test GHL connection — read-only, safe
  */
 async function testGHLConnection() {
   if (!GHL_API_KEY) {
-    return { success: false, error: 'No API key configured' };
+    return { success: false, error: 'No API key configured (GHL_API_KEY)' };
+  }
+  if (!GHL_LOCATION_ID) {
+    return { success: false, error: 'No Location ID configured (GHL_LOCATION_ID)' };
   }
 
-  try {
-    const res = await fetch(
-      `${GHL_BASE_URL}/contacts/?limit=1${GHL_LOCATION_ID ? '&locationId=' + GHL_LOCATION_ID : ''}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Version': '2021-07-28',
-        },
-      }
-    );
+  const result = await ghlRequest('GET', `/contacts/?locationId=${GHL_LOCATION_ID}&limit=1`);
 
-    if (res.ok) {
-      return { success: true, message: 'Connected to GoHighLevel' };
-    } else {
-      const err = await res.text();
-      return { success: false, error: `API returned ${res.status}: ${err}` };
-    }
-  } catch (err) {
-    return { success: false, error: err.message };
+  if (result.ok) {
+    const count = result.data?.meta?.total || result.data?.contacts?.length || 0;
+    return {
+      success: true,
+      message: `Connected to GoHighLevel. Location has ${count} contacts.`,
+      locationId: GHL_LOCATION_ID,
+    };
   }
+
+  return { success: false, error: result.error || 'Unknown error' };
 }
 
-module.exports = { pushToGHL, testGHLConnection };
+/**
+ * Get GHL integration status for dashboard
+ */
+function getGHLStatus() {
+  return {
+    configured: !!(GHL_API_KEY && GHL_LOCATION_ID),
+    hasApiKey: !!GHL_API_KEY,
+    hasLocationId: !!GHL_LOCATION_ID,
+  };
+}
+
+module.exports = { pushToGHL, testGHLConnection, getGHLStatus };

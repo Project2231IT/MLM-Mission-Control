@@ -3,195 +3,717 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guest WiFi Analytics</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <title>Guest WiFi Analytics — Project 2231</title>
+  <script src="/vendor/tailwind.js"></script>
+  <script src="/vendor/chart.min.js"></script>
   <style>
-    .drop-zone { transition: all 0.3s; }
-    .drop-zone.dragover { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
-    .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
-    .fade-in { animation: fadeIn 0.3s ease-in; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* Sidebar nav active state */
+    .nav-item {
+      transition: all 0.15s ease;
+      border-left: 3px solid transparent;
+    }
+    .nav-item.active {
+      background: #eff6ff;
+      color: #2563eb;
+      border-left-color: #2563eb;
+      font-weight: 600;
+    }
+    .nav-item:not(.active):hover {
+      background: #f8fafc;
+      color: #334155;
+    }
+
+    /* Page fade transitions */
+    .page-content {
+      animation: pageIn 0.18s ease-out;
+    }
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* KPI card hover */
+    .kpi-card {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      cursor: default;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    /* Table row hover */
+    .data-row:hover { background: #f8fafc; }
+
+    /* Modal overlay */
+    .modal-overlay { background: rgba(15,23,42,0.55); backdrop-filter: blur(2px); }
+
+    /* Location color dots */
+    .loc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Segment card hover */
+    .segment-card {
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .segment-card:hover {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+    }
+    .segment-card.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    /* Badge styles */
+    .badge-admin { background: #fef3c7; color: #92400e; }
+    .badge-viewer { background: #e0f2fe; color: #075985; }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+    /* Heatmap */
+    .heatmap-cell {
+      transition: opacity 0.2s;
+    }
+    .heatmap-cell:hover { opacity: 0.75; }
+
+    /* Tab buttons */
+    .tab-btn {
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      border-bottom-color: #2563eb;
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    /* Skeleton pulse */
+    .skeleton {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Export button */
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary {
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      transition: all 0.15s;
+    }
+    .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
-  <!-- Nav -->
-  <nav class="bg-gray-800 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <span class="text-2xl">📶</span>
-      <h1 class="text-xl font-bold">Guest WiFi Analytics</h1>
-      <span class="text-gray-500 text-sm">Project2231</span>
-    </div>
-    <div class="flex items-center gap-4">
-      <button onclick="loadDashboard()" class="text-gray-400 hover:text-white text-sm">↻ Refresh</button>
-      <button onclick="logout()" class="text-gray-400 hover:text-red-400 text-sm">Logout</button>
-    </div>
-  </nav>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex">
 
-  <!-- Tabs -->
-  <div class="border-b border-gray-700 px-6 flex gap-6">
-    <button onclick="showTab('dashboard')" id="tab-dashboard" class="py-3 text-sm font-medium tab-active">Dashboard</button>
-    <button onclick="showTab('upload')" id="tab-upload" class="py-3 text-sm font-medium text-gray-400 hover:text-white">Upload</button>
-    <button onclick="showTab('guests')" id="tab-guests" class="py-3 text-sm font-medium text-gray-400 hover:text-white">Guests</button>
-    <button onclick="showTab('export')" id="tab-export" class="py-3 text-sm font-medium text-gray-400 hover:text-white">Export</button>
+  <!-- ───────────────── SIDEBAR ───────────────── -->
+  <aside class="w-60 bg-white border-r border-slate-200 flex flex-col min-h-screen fixed top-0 left-0 z-20 shadow-sm">
+
+    <!-- Brand -->
+    <div class="px-5 py-5 border-b border-slate-100">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white text-lg flex-shrink-0">📶</div>
+        <div class="min-w-0">
+          <div class="font-bold text-slate-800 text-sm leading-tight truncate">WiFi Analytics</div>
+          <div class="text-slate-400 text-xs">Project 2231</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 py-3 px-2">
+      <button onclick="showPage('dashboard')" id="nav-dashboard"
+        class="nav-item active w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-600">
+        <span class="text-base">📊</span> Dashboard
+      </button>
+      <button onclick="showPage('customers')" id="nav-customers"
+        class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500">
+        <span class="text-base">👥</span> Customers
+      </button>
+      <button onclick="showPage('locations')" id="nav-locations"
+        class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500">
+        <span class="text-base">📍</span> Locations
+      </button>
+      <button onclick="showPage('analytics')" id="nav-analytics"
+        class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500">
+        <span class="text-base">📈</span> Analytics
+      </button>
+      <button onclick="showPage('marketing')" id="nav-marketing"
+        class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500">
+        <span class="text-base">✉️</span> Marketing
+      </button>
+
+      <div class="border-t border-slate-100 my-3 mx-1"></div>
+
+      <button onclick="showPage('settings')" id="nav-settings"
+        class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500 hidden" data-admin>
+        <span class="text-base">⚙️</span> Settings
+      </button>
+    </nav>
+
+    <!-- User area -->
+    <div class="px-4 py-4 border-t border-slate-100 bg-slate-50">
+      <div class="text-xs text-slate-500 mb-0.5">Signed in as</div>
+      <div class="text-sm font-medium text-slate-700 truncate" id="sidebar-user">—</div>
+      <button onclick="logout()"
+        class="mt-2 text-xs text-slate-400 hover:text-red-500 transition flex items-center gap-1">
+        <span>→</span> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ───────────────── MAIN ───────────────── -->
+  <div class="flex-1 ml-60 flex flex-col min-h-screen">
+
+    <!-- Top bar -->
+    <header class="bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between sticky top-0 z-10">
+      <h1 class="font-semibold text-slate-800 text-base" id="page-title">Dashboard</h1>
+      <div class="flex items-center gap-2">
+        <button onclick="refreshCurrentPage()"
+          class="btn-secondary text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+          <span>↻</span> Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- Page container -->
+    <main class="flex-1 p-6">
+
+      <!-- ══════════════ DASHBOARD ══════════════ -->
+      <div id="page-dashboard" class="page-content">
+
+        <!-- KPI row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex items-start justify-between mb-3">
+              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Customers</div>
+              <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-base">👥</div>
+            </div>
+            <div class="text-3xl font-bold text-slate-800 mb-0.5" id="kpi-total">—</div>
+            <div class="text-xs text-slate-400">All time</div>
+          </div>
+
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex items-start justify-between mb-3">
+              <div class="text-xs font-semibold text-blue-500 uppercase tracking-wide">New This Week</div>
+              <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-base">✨</div>
+            </div>
+            <div class="text-3xl font-bold text-blue-600 mb-0.5" id="kpi-week">—</div>
+            <div class="text-xs text-slate-400">Past 7 days</div>
+          </div>
+
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex items-start justify-between mb-3">
+              <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Returning</div>
+              <div class="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center text-base">🔄</div>
+            </div>
+            <div class="text-3xl font-bold text-emerald-600 mb-0.5" id="kpi-returning-pct">—</div>
+            <div class="text-xs text-slate-400" id="kpi-returning-sub">— returning customers</div>
+          </div>
+
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex items-start justify-between mb-3">
+              <div class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Active Locations</div>
+              <div class="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center text-base">📍</div>
+            </div>
+            <div class="text-3xl font-bold text-violet-600 mb-0.5" id="kpi-locations">—</div>
+            <div class="text-xs text-slate-400">Businesses</div>
+          </div>
+        </div>
+
+        <!-- Charts row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+          <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-slate-700 text-sm">Customer Trend — Last 30 Days</h3>
+            </div>
+            <canvas id="chart-trend" height="110"></canvas>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <h3 class="font-semibold text-slate-700 text-sm mb-4">New vs Returning</h3>
+            <canvas id="chart-ratio" height="170"></canvas>
+          </div>
+        </div>
+
+        <!-- Charts row 2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <h3 class="font-semibold text-slate-700 text-sm mb-4">Customers by Location</h3>
+            <canvas id="chart-locations-bar" height="160"></canvas>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-slate-700 text-sm">Recent Signups</h3>
+              <span class="text-xs text-slate-400">Last 10</span>
+            </div>
+            <div id="recent-signups" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- Top returning -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="font-semibold text-slate-700 text-sm mb-4">Top Returning Customers</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left border-b border-slate-100">
+                  <th class="pb-2 text-xs font-semibold text-slate-400 uppercase tracking-wide pr-4">Customer</th>
+                  <th class="pb-2 text-xs font-semibold text-slate-400 uppercase tracking-wide pr-4">Email</th>
+                  <th class="pb-2 text-xs font-semibold text-slate-400 uppercase tracking-wide pr-4">Locations</th>
+                  <th class="pb-2 text-xs font-semibold text-slate-400 uppercase tracking-wide text-right">Visits</th>
+                </tr>
+              </thead>
+              <tbody id="top-returning-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /page-dashboard -->
+
+
+      <!-- ══════════════ CUSTOMERS ══════════════ -->
+      <div id="page-customers" class="hidden page-content">
+
+        <!-- Filters bar -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-4">
+          <div class="flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-48">
+              <label class="block text-xs font-medium text-slate-500 mb-1">Search</label>
+              <input type="text" id="cust-search" placeholder="Name or email..."
+                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                onkeydown="if(event.key==='Enter') searchCustomers(1)">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Location</label>
+              <select id="cust-location"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                <option value="all">All Locations</option>
+                <option value="TCF">The City Forum</option>
+                <option value="D17">Dock 17</option>
+                <option value="ACME">ACME Athletics</option>
+                <option value="AHW">ACME Health &amp; Wellness</option>
+                <option value="MLC">Miss Lucille's Café</option>
+                <option value="MLM">Miss Lucille's Marketplace</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Segment</label>
+              <select id="cust-segment"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                <option value="all">All</option>
+                <option value="new">New (1 visit)</option>
+                <option value="returning">Returning (2+)</option>
+                <option value="lapsed">Lapsed</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">From</label>
+              <input type="date" id="cust-from"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">To</label>
+              <input type="date" id="cust-to"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+            </div>
+            <button onclick="searchCustomers(1)" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">Search</button>
+            <button onclick="exportCustomersCsv()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5">
+              <span>⬇</span> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left bg-slate-50 border-b border-slate-200">
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Customer</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Email</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Location</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Visits</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">First Seen</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Last Seen</th>
+                </tr>
+              </thead>
+              <tbody id="customers-tbody"></tbody>
+            </table>
+          </div>
+          <div id="customers-empty" class="hidden py-16 text-center text-slate-400">
+            <div class="text-3xl mb-2">🔍</div>
+            <div class="font-medium">No customers found</div>
+            <div class="text-sm mt-1">Try adjusting your filters</div>
+          </div>
+        </div>
+
+        <!-- Pagination + count -->
+        <div class="flex items-center justify-between mt-4">
+          <div id="customers-count" class="text-sm text-slate-400"></div>
+          <div id="customers-pagination" class="flex gap-1.5"></div>
+        </div>
+      </div><!-- /page-customers -->
+
+
+      <!-- ══════════════ LOCATIONS ══════════════ -->
+      <div id="page-locations" class="hidden page-content">
+        <div id="locations-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div class="skeleton h-40 col-span-full"></div>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="font-semibold text-slate-700 text-sm mb-4">Location Comparison — New vs Returning</h3>
+          <canvas id="chart-location-compare" height="90"></canvas>
+        </div>
+      </div><!-- /page-locations -->
+
+
+      <!-- ══════════════ ANALYTICS ══════════════ -->
+      <div id="page-analytics" class="hidden page-content">
+
+        <!-- Growth chart with range selector -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-slate-700 text-sm">Customer Growth</h3>
+            <div class="flex gap-1">
+              <button onclick="setGrowthRange('7d')" data-range="7d" class="range-btn text-xs px-3 py-1 rounded-lg border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition">7D</button>
+              <button onclick="setGrowthRange('30d')" data-range="30d" class="range-btn text-xs px-3 py-1 rounded-lg border border-blue-500 bg-blue-50 text-blue-600 font-semibold transition">30D</button>
+              <button onclick="setGrowthRange('90d')" data-range="90d" class="range-btn text-xs px-3 py-1 rounded-lg border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition">90D</button>
+              <button onclick="setGrowthRange('12m')" data-range="12m" class="range-btn text-xs px-3 py-1 rounded-lg border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition">12M</button>
+            </div>
+          </div>
+          <canvas id="chart-growth" height="100"></canvas>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+          <!-- Visit frequency -->
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <h3 class="font-semibold text-slate-700 text-sm mb-4">Visit Frequency Distribution</h3>
+            <canvas id="chart-frequency" height="180"></canvas>
+          </div>
+
+          <!-- Age demographics -->
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <h3 class="font-semibold text-slate-700 text-sm mb-4">Age Demographics</h3>
+            <canvas id="chart-age" height="180"></canvas>
+          </div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+          <h3 class="font-semibold text-slate-700 text-sm mb-4">Peak Hours Heatmap — Visits by Hour &amp; Day</h3>
+          <div id="heatmap-container" class="overflow-x-auto"></div>
+        </div>
+
+        <!-- Cross-location -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="font-semibold text-slate-700 text-sm mb-4">Cross-Location Visitors</h3>
+          <div id="cross-location-container"></div>
+        </div>
+      </div><!-- /page-analytics -->
+
+
+      <!-- ══════════════ MARKETING ══════════════ -->
+      <div id="page-marketing" class="hidden page-content">
+
+        <!-- Segment cards -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="segment-cards">
+          <div class="segment-card bg-white rounded-xl p-4 border border-slate-200 shadow-sm" data-seg="all">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">All Customers</div>
+            <div class="text-2xl font-bold text-slate-800" id="seg-all">—</div>
+          </div>
+          <div class="segment-card bg-white rounded-xl p-4 border border-slate-200 shadow-sm" data-seg="new">
+            <div class="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-2">New</div>
+            <div class="text-2xl font-bold text-blue-600" id="seg-new">—</div>
+            <div class="text-xs text-slate-400 mt-1">1 visit</div>
+          </div>
+          <div class="segment-card bg-white rounded-xl p-4 border border-slate-200 shadow-sm" data-seg="returning">
+            <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">Returning</div>
+            <div class="text-2xl font-bold text-emerald-600" id="seg-returning">—</div>
+            <div class="text-xs text-slate-400 mt-1">2+ visits</div>
+          </div>
+          <div class="segment-card bg-white rounded-xl p-4 border border-slate-200 shadow-sm" data-seg="lapsed30">
+            <div class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Lapsed 30d</div>
+            <div class="text-2xl font-bold text-amber-600" id="seg-lapsed30">—</div>
+            <div class="text-xs text-slate-400 mt-1">No visit 30+ days</div>
+          </div>
+          <div class="segment-card bg-white rounded-xl p-4 border border-slate-200 shadow-sm" data-seg="lapsed60">
+            <div class="text-xs font-semibold text-orange-600 uppercase tracking-wide mb-2">Lapsed 60d</div>
+            <div class="text-2xl font-bold text-orange-600" id="seg-lapsed60">—</div>
+            <div class="text-xs text-slate-400 mt-1">No visit 60+ days</div>
+          </div>
+          <div class="segment-card bg-white rounded-xl p-4 border border-slate-200 shadow-sm" data-seg="lapsed90">
+            <div class="text-xs font-semibold text-red-600 uppercase tracking-wide mb-2">Lapsed 90d</div>
+            <div class="text-2xl font-bold text-red-600" id="seg-lapsed90">—</div>
+            <div class="text-xs text-slate-400 mt-1">No visit 90+ days</div>
+          </div>
+        </div>
+
+        <!-- Email list builder -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-slate-700 text-sm">Email List Builder</h3>
+            <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-md" id="mkt-preview-count"></span>
+          </div>
+          <div class="flex flex-wrap gap-3 items-end">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Segment</label>
+              <select id="mkt-segment" onchange="updateMarketingPreview()"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                <option value="all">All Customers</option>
+                <option value="new">New (1 visit)</option>
+                <option value="returning">Returning (2+ visits)</option>
+                <option value="lapsed30">Lapsed 30+ Days</option>
+                <option value="lapsed60">Lapsed 60+ Days</option>
+                <option value="lapsed90">Lapsed 90+ Days</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Location</label>
+              <select id="mkt-location" onchange="updateMarketingPreview()"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                <option value="all">All Locations</option>
+                <option value="TCF">The City Forum</option>
+                <option value="D17">Dock 17</option>
+                <option value="ACME">ACME Athletics</option>
+                <option value="AHW">ACME Health &amp; Wellness</option>
+                <option value="MLC">Miss Lucille's Café</option>
+                <option value="MLM">Miss Lucille's Marketplace</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">From</label>
+              <input type="date" id="mkt-from" onchange="updateMarketingPreview()"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">To</label>
+              <input type="date" id="mkt-to" onchange="updateMarketingPreview()"
+                class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+            </div>
+            <button onclick="exportMarketingList()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5">
+              <span>⬇</span> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Coming soon placeholders -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white rounded-xl p-5 border border-dashed border-slate-300">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-lg">📬</div>
+              <div>
+                <div class="font-semibold text-slate-700 text-sm">Automated Email Campaigns</div>
+                <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">Coming Soon</span>
+              </div>
+            </div>
+            <p class="text-sm text-slate-500">Schedule automated win-back and loyalty campaigns based on visit behavior.</p>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-dashed border-slate-300">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-lg">⭐</div>
+              <div>
+                <div class="font-semibold text-slate-700 text-sm">Review Request Automation</div>
+                <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">Coming Soon</span>
+              </div>
+            </div>
+            <p class="text-sm text-slate-500">Automatically request Google and Yelp reviews from satisfied returning customers.</p>
+          </div>
+        </div>
+
+      </div><!-- /page-marketing -->
+
+
+      <!-- ══════════════ SETTINGS ══════════════ -->
+      <div id="page-settings" class="hidden page-content">
+
+        <!-- Tabs -->
+        <div class="flex gap-6 border-b border-slate-200 mb-6">
+          <button onclick="showSettingsTab('users')" id="stab-users"
+            class="tab-btn active pb-3 text-sm font-medium text-blue-600">👤 Users</button>
+          <button onclick="showSettingsTab('audit')" id="stab-audit"
+            class="tab-btn pb-3 text-sm font-medium text-slate-500 hover:text-slate-700">📋 Audit Log</button>
+          <button onclick="showSettingsTab('system')" id="stab-system"
+            class="tab-btn pb-3 text-sm font-medium text-slate-500 hover:text-slate-700">⚙️ System</button>
+        </div>
+
+        <!-- Users panel -->
+        <div id="spanel-users">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-slate-700">User Management</h3>
+            <button onclick="openUserModal()"
+              class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">+ Add User</button>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr class="text-left">
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Username</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Email</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Role</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Last Login</th>
+                  <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Audit log panel -->
+        <div id="spanel-audit" class="hidden">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                  <tr class="text-left">
+                    <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Time</th>
+                    <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">User</th>
+                    <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Action</th>
+                    <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Details</th>
+                    <th class="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">IP</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="audit-pagination" class="flex justify-center gap-1.5 mt-4"></div>
+        </div>
+
+        <!-- System panel -->
+        <div id="spanel-system" class="hidden">
+          <div class="max-w-lg bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+            <h3 class="font-semibold text-slate-700 mb-5">System Configuration</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Webhook URL</label>
+                <input type="url" id="setting-webhook-url" placeholder="https://hooks.example.com/..."
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="setting-webhook-enabled"
+                  class="w-4 h-4 rounded border-slate-300 text-blue-600">
+                <label for="setting-webhook-enabled" class="text-sm text-slate-600">Enable Webhook</label>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button onclick="saveSettings()" class="btn-primary flex-1 py-2 px-4 rounded-lg text-sm font-medium">Save Settings</button>
+                <button onclick="testWebhook()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium">Test Webhook</button>
+              </div>
+              <div id="settings-msg" class="hidden text-sm p-3 rounded-lg"></div>
+            </div>
+            <div class="border-t border-slate-100 mt-6 pt-5">
+              <div class="text-xs text-slate-400 space-y-1">
+                <div>Guest WiFi Analytics — Project 2231</div>
+                <div id="app-version">v2.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /page-settings -->
+
+    </main>
   </div>
 
-  <!-- Content -->
-  <main class="p-6 max-w-7xl mx-auto">
-    <!-- DASHBOARD TAB -->
-    <div id="panel-dashboard" class="fade-in">
-      <!-- KPI Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-gray-400 text-sm">Total Guests</div>
-          <div class="text-3xl font-bold mt-1" id="kpi-total">-</div>
-        </div>
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-gray-400 text-sm">This Week</div>
-          <div class="text-3xl font-bold mt-1 text-blue-400" id="kpi-week">-</div>
-        </div>
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-gray-400 text-sm">New Guests</div>
-          <div class="text-3xl font-bold mt-1 text-green-400" id="kpi-new">-</div>
-        </div>
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <div class="text-gray-400 text-sm">Returning</div>
-          <div class="text-3xl font-bold mt-1 text-yellow-400" id="kpi-returning">-</div>
-        </div>
-      </div>
+  <!-- ───────────────── MODALS ───────────────── -->
 
-      <!-- Charts Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <!-- Location Breakdown -->
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <h3 class="font-semibold mb-3">Guests by Location</h3>
-          <canvas id="chart-locations" height="200"></canvas>
-        </div>
-        <!-- New vs Returning Pie -->
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <h3 class="font-semibold mb-3">New vs Returning</h3>
-          <canvas id="chart-ratio" height="200"></canvas>
-        </div>
+  <!-- Customer Detail Modal -->
+  <div id="customer-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-200">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <h3 class="font-semibold text-slate-800" id="customer-modal-title">Customer Details</h3>
+        <button onclick="closeModal('customer-modal')"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition text-xl leading-none">×</button>
       </div>
+      <div id="customer-modal-body" class="p-6"></div>
+    </div>
+  </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <!-- Peak Days -->
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <h3 class="font-semibold mb-3">Visits by Day of Week</h3>
-          <canvas id="chart-days" height="200"></canvas>
-        </div>
-        <!-- Peak Hours -->
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <h3 class="font-semibold mb-3">Visits by Hour</h3>
-          <canvas id="chart-hours" height="200"></canvas>
-        </div>
+  <!-- Add/Edit User Modal -->
+  <div id="user-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <h3 class="font-semibold text-slate-800" id="user-modal-title">Add User</h3>
+        <button onclick="closeModal('user-modal')"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition text-xl leading-none">×</button>
       </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <!-- Age Demographics -->
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <h3 class="font-semibold mb-3">Age Demographics</h3>
-          <canvas id="chart-age" height="200"></canvas>
+      <div class="p-6 space-y-4">
+        <input type="hidden" id="user-modal-id">
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1.5">Username</label>
+          <input type="text" id="user-username"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
-        <!-- Top Returning -->
-        <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-          <h3 class="font-semibold mb-3">Top Returning Visitors</h3>
-          <div id="top-returning" class="space-y-2 max-h-[300px] overflow-y-auto"></div>
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
+          <input type="email" id="user-email"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
-      </div>
-
-      <!-- Cross-Location -->
-      <div class="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-6">
-        <h3 class="font-semibold mb-3">Cross-Location Visitors</h3>
-        <div id="cross-location" class="overflow-x-auto">
-          <p class="text-gray-500">No cross-location visitors yet</p>
+        <div id="user-password-field">
+          <label class="block text-sm font-medium text-slate-600 mb-1.5">Password</label>
+          <input type="password" id="user-password" placeholder="Min 6 characters"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1.5">Role</label>
+          <select id="user-role"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+            <option value="viewer">Viewer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div id="user-active-field" class="hidden items-center gap-3">
+          <input type="checkbox" id="user-active" class="w-4 h-4 rounded border-slate-300" checked>
+          <label for="user-active" class="text-sm text-slate-600">Active</label>
+        </div>
+        <div id="user-modal-err" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+        <button onclick="saveUser()" class="btn-primary w-full py-2.5 px-4 rounded-lg text-sm font-semibold">Save User</button>
       </div>
     </div>
+  </div>
 
-    <!-- UPLOAD TAB -->
-    <div id="panel-upload" class="hidden fade-in">
-      <div class="max-w-2xl mx-auto">
-        <div id="drop-zone" class="drop-zone border-2 border-dashed border-gray-600 rounded-xl p-12 text-center cursor-pointer hover:border-gray-500">
-          <div class="text-5xl mb-4">📁</div>
-          <p class="text-lg font-medium">Drop XLSX file here or click to browse</p>
-          <p class="text-gray-500 mt-2">Grandstream GWN Cloud weekly export</p>
-          <input type="file" id="file-input" accept=".xlsx,.xls" class="hidden">
+  <!-- Password Reset Modal -->
+  <div id="pw-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <h3 class="font-semibold text-slate-800">Reset Password</h3>
+        <button onclick="closeModal('pw-modal')"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition text-xl leading-none">×</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <input type="hidden" id="pw-user-id">
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1.5">New Password</label>
+          <input type="password" id="pw-new" placeholder="Min 6 characters"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
         </div>
-        <div id="upload-progress" class="hidden mt-4">
-          <div class="bg-gray-700 rounded-full h-2">
-            <div id="progress-bar" class="bg-blue-500 h-2 rounded-full transition-all" style="width: 0%"></div>
-          </div>
-          <p id="upload-status" class="text-sm text-gray-400 mt-2"></p>
-        </div>
-        <div id="upload-result" class="hidden mt-4 bg-gray-800 rounded-xl p-4 border border-gray-700"></div>
-
-        <!-- Upload History -->
-        <div class="mt-8">
-          <h3 class="font-semibold mb-3">Upload History</h3>
-          <div id="upload-history" class="space-y-2"></div>
-        </div>
+        <div id="pw-modal-err" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+        <button onclick="resetPassword()"
+          class="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition">Reset Password</button>
       </div>
     </div>
-
-    <!-- GUESTS TAB -->
-    <div id="panel-guests" class="hidden fade-in">
-      <div class="flex gap-4 mb-4">
-        <input type="text" id="guest-search" placeholder="Search by name or email..."
-          class="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500">
-        <select id="guest-location-filter" class="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white">
-          <option value="all">All Locations</option>
-          <option value="TCF">The City Forum</option>
-          <option value="D17">Dock 17</option>
-          <option value="ACME">ACME</option>
-          <option value="MLC">Miss Lucilles</option>
-        </select>
-        <button onclick="searchGuests()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Search</button>
-      </div>
-      <div id="guests-table" class="overflow-x-auto"></div>
-      <div id="guests-pagination" class="flex justify-center gap-2 mt-4"></div>
-    </div>
-
-    <!-- EXPORT TAB -->
-    <div id="panel-export" class="hidden fade-in">
-      <div class="max-w-lg mx-auto bg-gray-800 rounded-xl p-6 border border-gray-700">
-        <h3 class="font-semibold text-lg mb-4">Export Guest Data (CSV)</h3>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm text-gray-400 mb-1">Location</label>
-            <select id="export-location" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
-              <option value="all">All Locations</option>
-              <option value="TCF">The City Forum</option>
-              <option value="D17">Dock 17</option>
-              <option value="ACME">ACME</option>
-              <option value="MLC">Miss Lucilles</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm text-gray-400 mb-1">From Date</label>
-              <input type="date" id="export-from" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
-            </div>
-            <div>
-              <label class="block text-sm text-gray-400 mb-1">To Date</label>
-              <input type="date" id="export-to" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm text-gray-400 mb-1">Guest Type</label>
-            <select id="export-type" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
-              <option value="all">All Guests</option>
-              <option value="new">New Only</option>
-              <option value="returning">Returning Only</option>
-            </select>
-          </div>
-          <button onclick="exportCsv()" class="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
-            ⬇ Download CSV
-          </button>
-        </div>
-      </div>
-    </div>
-  </main>
+  </div>
 
   <script src="/js/app.js"></script>
 </body>

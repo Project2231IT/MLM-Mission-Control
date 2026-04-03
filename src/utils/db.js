@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
@@ -69,10 +70,69 @@ async function initDb() {
 
       CREATE INDEX IF NOT EXISTS idx_mac_addresses_mac ON mac_addresses(mac);
       CREATE INDEX IF NOT EXISTS idx_mac_addresses_guest_id ON mac_addresses(guest_id);
+
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255),
+        password_hash VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'viewer',
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_login TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        action VARCHAR(255) NOT NULL,
+        details TEXT,
+        ip_address VARCHAR(50),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key VARCHAR(255) PRIMARY KEY,
+        value TEXT,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
     `);
+
+    // Auto-create default admin if no users exist
+    const userCount = await client.query('SELECT COUNT(*) as count FROM users');
+    if (parseInt(userCount.rows[0].count) === 0) {
+      const adminPass = process.env.ADMIN_PASS || 'P2231GuestAdmin';
+      const hash = await bcrypt.hash(adminPass, 10);
+      await client.query(
+        `INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING`,
+        ['admin', 'admin@project2231.com', hash, 'admin']
+      );
+      console.log('Default admin user created');
+    }
+
+    // Seed default settings if not present
+    await client.query(`
+      INSERT INTO app_settings (key, value) VALUES
+        ('webhook_url', ''),
+        ('webhook_enabled', 'false'),
+        ('app_name', 'Guest WiFi Analytics')
+      ON CONFLICT (key) DO NOTHING
+    `);
+
   } finally {
     client.release();
   }
 }
 
-module.exports = { pool, initDb };
+async function logAudit(userId, action, details, ipAddress) {
+  try {
+    await pool.query(
+      'INSERT INTO audit_log (user_id, action, details, ip_address) VALUES ($1, $2, $3, $4)',
+      [userId || null, action, details || null, ipAddress || null]
+    );
+  } catch (err) {
+    console.error('Audit log error:', err.message);
+  }
+}
+
+module.exports = { pool, initDb, logAudit };

@@ -33,4 +33,20 @@ If you change this file, tell the user — it's your soul, and they should know.
 
 ---
 
+## GitHub Backup (as of 2026-04-07)
+
+**Repository:** `https://github.com/Project2231IT/MLM-Mission-Control`
+
+**GitHub PAT (classic, repo scope):** stored in `~/.git-credentials` on `jakesopenclaw`. The machine account `Project2231IT` owns the repo. Token expires ~yearly — if push fails with 403, regenerate at github.com/settings/tokens and update `~/.git-credentials`.
+
+**How to push:**
+```
+cd ~/.openclaw/workspace
+git push origin master
+```
+
+Note: The PAT is embedded in the remote URL via `.git-credentials`. Token expires ~yearly — if push fails with 403, regenerate the token at github.com/settings/tokens and update `~/.git-credentials`.
+
+---
+
 _This file is yours to evolve. As you learn who you are, update it._

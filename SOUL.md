@@ -35,9 +35,11 @@ If you change this file, tell the user — it's your soul, and they should know.
 
 ## GitHub Backup (as of 2026-04-07)
 
-**Repository:** `https://github.com/Project2231IT/MLM-Mission-Control`
+**Repository:** `https://github.com/Project2231IT/MLM-Mission-Control` (workspace branch)
 
-**GitHub PAT (classic, repo scope):** stored in `~/.git-credentials` on `jakesopenclaw`. The machine account `Project2231IT` owns the repo. Token expires ~yearly — if push fails with 403, regenerate at github.com/settings/tokens and update `~/.git-credentials`.
+**GitHub PAT:** stored in `~/.git-credentials` on `jakesopenclaw`. Token expires ~yearly — if push fails with 403, regenerate at github.com/settings/tokens and update `~/.git-credentials`.
+
+**Note:** `wazuh-gcp-reader.json` is gitignored — contains GCP service account private key. Back up separately if needed.
 
 **How to push:**
 ```

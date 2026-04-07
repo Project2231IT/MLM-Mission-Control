@@ -1,0 +1,49 @@
+---
+_meta:
+  type: "internalusers"
+  config_version: 2
+admin:
+  hash: "$2y$12$BQ4sWnn7Rh0uobWtj3dLr.Y6cETcirFjc1AWAX4Y7fIDrnc.q.p1C"
+  reserved: true
+  backend_roles:
+  - "admin"
+  description: "Demo admin user"
+anomalyadmin:
+  hash: "$2y$12$oAkarjdH52.ArjkcwshHBOAApufvQrqAg2EZQrm7clFl2DYuD/9ye"
+  reserved: false
+  opendistro_security_roles:
+  - "anomaly_full_access"
+  description: "Demo anomaly admin user, using internal role"
+kibanaserver:
+  hash: "$2y$12$wWOf1sWTngIwzFCtJgbhUueW79A9.oUaeYM62LafEjkfiPG6ZRdiS"
+  reserved: true
+  description: "Demo OpenSearch Dashboards user"
+kibanaro:
+  hash: "$2y$12$doeN8uQ/lEiePLnylNxSPuxzlJHQ7jE19iIXMH2v7/w73CJ6SoEhy"
+  reserved: false
+  backend_roles:
+  - "kibanauser"
+  - "readall"
+  attributes:
+    attribute1: "value1"
+    attribute2: "value2"
+    attribute3: "value3"
+  description: "Demo read only user, using external role mapping"
+logstash:
+  hash: "$2y$12$I1WYgIFuM8s4ufmLmzdvQufz6feCWF04vX22lLCWybribEtWl3/j6"
+  reserved: false
+  backend_roles:
+  - "logstash"
+  description: "Demo logstash user, using external role mapping"
+readall:
+  hash: "$2y$12$cq5.EAEFWFMjrKnCwpqByeyYSpuYU9TGYw1cUkLMy4L5QTaMgF31O"
+  reserved: false
+  backend_roles:
+  - "readall"
+  description: "Demo readall user, using external role mapping"
+snapshotrestore:
+  hash: "$2y$12$h806uhQFe6BHPmnBpimKp.mUJoEHTWu3reUfSYBm3PVbP3Kqo5RoG"
+  reserved: false
+  backend_roles:
+  - "snapshotrestore"
+  description: "Demo snapshotrestore user, using external role mapping"

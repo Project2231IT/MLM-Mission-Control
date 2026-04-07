@@ -1,0 +1,12 @@
+  <!-- Google Cloud Pub/Sub integration for Workspace audit logs -->
+  <wodle name="gcloud-pubsub">
+    <disabled>no</disabled>
+    <interval>1m</interval>
+    <project>affable-tribute-492617-p0</project>
+    <subscription_id>workspace-logs-sub</subscription_id>
+    <credentials_file>/var/ossec/wodles/gcloud/credentials/wazuh-gcp-reader.json</credentials_file>
+    <max_messages>100</max_messages>
+    <num_threads>1</num_threads>
+  </wodle>
+
+</ossec_config>

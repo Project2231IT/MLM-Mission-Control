@@ -1,0 +1,78 @@
+00:00:02 Speaker 1
+Commissary prep should be pretty nice. I got some new features on there: feedback notes, add items if they need to, and then the recipe cards. That was a lot of trouble, but it works. So stoked about that. All right, So Miss Lucille's dashboard :. So this is what I've got built on the recruitment priority.
+00:00:32 Speaker 1
+I didn't want to get too far in the weeds of it
+00:00:34 Speaker 2
+So unless Ella gave you a lot
+00:00:39 Speaker 1
+Yeah, she did. Uh, but not necessarily for this specifically. And what I was thinking was like, okay, we know Miss, we know Lerae does great. We knowum the leather goods does great and and Chase's popcorn. The kettle does great. Like we we don't want to focus on just being a.
+00:01:02 Speaker 1
+We don't want to sell more food. We don't want vendors that sell more food, right? Because then that's competing with like the cafe. And, then we don't want to also add more furniture and stuff like that. Because then it's like well, then we're just becoming a furniture dealer. Oh okay, thanks man. Um so I was kind of like giving a little bit of guardrails on that, like well, Let's, let's look at it from like a different perspective to where we're not like, okay, we know those things do good, but we don't want to be recruiting those actively at all times. Uh, but this is kind of how it broke it down. Um, So it was like the next best thing was like So,
+00:01:48 Speaker 2
+How did it know? Did you categorize each current booth into one of those categories? Yes.
+00:01:55 Speaker 1
+Um I didn't specifically, but what I did was I went and took like probably. 80 some 60 some pictures of every booth and and I hadum Mr Krabs give me a list first. Yeah, like tell me what booths you want and I'll go take pictures of them, and then it gave me a list. And I was like, oh, I need a little bit more.
+00:02:17 Speaker 2
+So cause did he add those say, like on do one of these have like the list with all the booths on it. Like cause he did add it like a cause it should have had like a column, for example, that shows like what is this booth category.
+00:02:29 Speaker 2
+Like do we have like are all those logged?
+00:02:31 Speaker 1
+Shrugged boots.
+00:02:33 Speaker 2
+I'm saying this is slow. Yeah, it's a little bit slow. But that's where like if it's categorized by because here's here's my thought, like briefly on what you just showed with like the suggestions on moving forward, It can't know unless it's got the hard data of what's current of like what are the current boots classified as? What are their sales in the categories?
+00:03:05 Speaker 2
+So these don't really show like what uh. These in this. But it's like something like where like each vendor, just needs to have like that main key category labeled. And you could ask Ella that or you could say, based off the photos like, What are our categories? And then once it's defined those by like five different categories or whatever, Then it can run the sales um data off of those categories and tell us which ones do well, which ones don't do well. So we know, okay, hey, this type make money; these ones don't.
+00:03:36 Speaker 1
+Yeah, um, it's got so what I've what I've told it. Um, we have the reports recruitment. It looks like we're missing a page. I had another performance tab;. I don't know why it got deleted, but uh, that's weird. And. In that tab, it had those the performance of each. And then it broke it down like which booth and then their prices, like who were coming up short. Um, I don't know why I deleted that though.
+00:04:14 Speaker 2
+I just noticed thought it was on maybe wasn't this one the scorecard?
+00:04:18 Speaker 1
+That's a bummer. No, it was it was right under the reports because the logo looked anyway,
+00:04:25 Speaker 2
+S like fundamental concept of like this kind of stuff is like, Don't let the AI figure it out and don't try to figure out yourself because I guess you just kind of guess what kind of boots. It doesn't know nearly like the nuance of like what we do compared to what we do.
+00:04:38 Speaker 1
+Yeah, so what I told it, like I just asked like, okay, well, what's the best way we can categorize all this stuff? And then it just literally told me go take pictures.
+00:04:48 Speaker 2
+So okay so after the pictures, like where did it categorize them though?
+00:04:51 Speaker 1
+It categorized it in that tab but I don't know where. I don't know why it got deleted.
+00:04:57 Speaker 2
+Because That's where we need to start, like okay, Each booth with like the the photo and then the category section or you know subcategory section, whatever it is where it's got like it's clearly linked those to certain things. Or honestly, it probably could do it even better just looking at like the sales. Like look at the sales for the booth last three months. Look at the descriptions; that actually might be better. Like what kind of. I mean, wouldn't that booth type? Like what kind of items are do they sell? Yeah. That's actually honestly, that's what I would do.
+00:05:27 Speaker 1
+It had a lot. It was telling me the different groups and sections. It looks like it'll reload real quick.
+00:05:47 Speaker 2
+Like pulling it from the sales data? So if you like Bethany Johnson, Pull the last three months, like analyze the last three months of sales data for Bethany Johnson's booth, and then like figure out what type of items they're selling. And then like label or like log in some way to where we know okay, like these are what are selling. These are what aren't.
+00:06:06 Speaker 1
+Good question. Are they supposed to be using the tablets in the prep kitchen? They can if they want. But I talked to Ross today, and he asked if we can do some training on it first. So tomorrow or Monday morning, we're going to do.
+00:06:21 Speaker 2
+I walked through there and no, the all balls of the wall and I don't see a single tablet out. I am okay.
+00:06:36 Speaker 2
+But don't worry about trying to get a loader right now.
+00:06:39 Speaker 1
+That I had all this set up already.
+00:06:43 Speaker 2
+But, that's that's how I would because that way you are not like none of it's theory. You are not coming over there. Not it's all it is literally is getting the data from the stakeholders, and then or getting the context from the stakeholders like the information, industry knowledge. But then this is just going off straight data. It's not like assuming things and trying to make like come up with things. It's just look at straight like you look at the sales data. I mean it's like it doesn't have any room to maneuver. It's just straight yeah,
+00:07:12 Speaker 1
+Um, the vendor, Real quick, I know you got to go. The vendor accountability, so it's saying start the compliance cycle. It'll draft the warning notices for like the people who are coming up short. Ella reviews and delivers, and this is the muscle behind everything we built. Zero new code needed, just documents. I'm not sure what kind of route you want to go with this.
+00:07:34 Speaker 2
+Yeah, I would probably pause at this stage. Okay, Let's get like this first phase one, like kind of dialed in because so much of this is going to be nuance with, like how do they currently do things? What's the current like there's a lot of business change that will have to get in place, and that's going to take on a slower process like getting them on board, understanding how that flows first. Absolutely. So I would say for this part, I'd pause this one at that point, just make sure like the data. But what I just talked about it. That's super clean. The categories of items where it is basically analyzing the photo of the booth, with the sales in the descriptions made, so you didn't even tell foodie okay, pull an example of um Lucy Armistead's booth number blah. Here is a photo of it. Give the description based on the overall photo, But then look at the last three months of sales or even last year. However, well, it can pull. Look at all the item descriptions they give me a summary with.
+00:08:29 Speaker 2
+Like tags, almost or categories of like what are the items? Are they like clothing? Is it furniture? Is it retail? Is it candles is it comics and yeah, yeah, whatever. Whatever kind of buckets of items to know. But then just tell Foodie like big pictures. Like, we're trying to figure out how to rank this stuff. So we know what kind of booths we want to bring in here. But we can't bring them until we know what makes money. Yeah I would give give Foodie that just so we don't go too like deep into it Okay. And I bet, like it's probably like you probably already have it all loaded. You just gotta get to put it on a page. Like that, but I would that's where I would start. I would say get to that checkpoint.
+00:09:08 Speaker 1
+So these are some of the categories.
+00:09:12 Speaker 2
+Baby children that we have.
+00:09:14 Speaker 1
+Yeah, and then they give someone kind of their choices. Yeah, it's like those look good to me. But yeah, I was just saying like in terms of like ranking, What to actively recruit? And and then that, that would bring me into my next question here was the vendor applications on dashboard, where, if, if it's possible for us to integrate with WordPress and Mr,
+00:09:39 Speaker 2
+Krabs can I wouldn't even worry about it right now. Like I think until we get this data right, it's not worth building out any next steps. Not is not right, okay, but make sure that it's that it's flowing where like they agree with it that we know we got the info correct. And what I mean by that is like. The overall booth, Because like if we analyze the sales and we know we can classify like all these categories, you got, that's like the items that are being sold. But then if it actually categorizes the booth as a whole, you almost have like the booth as a whole like buckets, but then the actual items they sold. So there is like the visual appeal piece, but then the hard data piece. And. Now like some way to like have both of that information to combine into the analysis to then tell us recruiting, what do we need to go find?
+00:10:24 Speaker 2
+Okay, does that make sense? Because right now, like I don't know if we could say "yeah, it's a specialty" or a jewelry accessory booth, the candle booth giving home like a lot of them are kind of combos. And that's right. But this questions like they give food to the blog. Like that's the question we got to answer. Like, how based off what we're trying to do, and this where I wouldn't tell it what to do, literally give foodie this transcript. But hey, this was our conversation with the rough direction of where we're headed, trying to work on, like analyzing the performance of who we want to recruit. How do we do this? Like, let it let it kind of guide guide that process, but with like leading with sales, like justifying and categorizing based off of sales, but then also like the booth type. But then I would say now give me five questions you need for Ella or Ashton or whoever to answer to give you context about this. Like if you're not sure or if you need more feedback before you start, what five questions do you need answered? And then I'll get it to start with that. Give it that plot. Do that. Start with it.
+00:11:23 Speaker 2
+And then, that's later this afternoon, and see what it came back with. Okay, yeah. I think you're really close. I think you got all the just a little prompting and then Yeah,
+00:11:31 Speaker 1
+I was just going based off of those the things that you Yeah, no, it's perfect. And then I just fed it Ella's info from yesterday and addedum a lot of more context. And get.
+00:11:42 Speaker 2
+Adding to like if there's more context about Miss Lucille as a whole that it needs. You can ask it too, is like, hey, do you feel like you know enough about this? Are there other questions you have? Yeah, And it'll get more.
+00:11:54 Speaker 1
+I generated some pretty good ones. That's real good. It's really good at that. I'll hop back in the bedroom and get started.

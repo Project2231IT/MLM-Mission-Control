@@ -1,0 +1,15 @@
+{
+  "taxonomy": "Ashton's 9 Categories",
+  "updated": "2026-04-03",
+  "categories": {
+    "Boutique & Gifts": {"booths": 25, "total_90d": 587317, "avg_booth_mo": 4699},
+    "Antiques & Resale": {"booths": 44, "total_90d": 427360, "avg_booth_mo": 1943},
+    "Crafts & Handmade": {"booths": 14, "total_90d": 199357, "avg_booth_mo": 2848},
+    "Clothing": {"booths": 10, "total_90d": 169078, "avg_booth_mo": 3382},
+    "Kids & Baby": {"booths": 5, "total_90d": 96313, "avg_booth_mo": 3853},
+    "Food": {"booths": 2, "total_90d": 95031, "avg_booth_mo": 9503},
+    "Home Design & Décor": {"booths": 8, "total_90d": 60403, "avg_booth_mo": 1510},
+    "Mens": {"booths": 2, "total_90d": 26714, "avg_booth_mo": 2671},
+    "Pets": {"booths": 1, "total_90d": 16190, "avg_booth_mo": 3238}
+  }
+}

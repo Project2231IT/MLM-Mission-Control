@@ -1,0 +1,321 @@
+{
+  "Boutique & Gifts": {
+    "total": 587317.4299999909,
+    "subtypes": [
+      {
+        "name": "Candles & Fragrance",
+        "revenue": 55167.87999999978,
+        "pct": 9.4
+      },
+      {
+        "name": "Clothing (Womens)",
+        "revenue": 43560.34999999988,
+        "pct": 7.4
+      },
+      {
+        "name": "Toys & Plush",
+        "revenue": 38190.270000000026,
+        "pct": 6.5
+      },
+      {
+        "name": "Jewelry",
+        "revenue": 28218.1400000001,
+        "pct": 4.8
+      },
+      {
+        "name": "Home D\u00e9cor",
+        "revenue": 22850.050000000043,
+        "pct": 3.9
+      },
+      {
+        "name": "Skincare & Bath",
+        "revenue": 20157.83000000003,
+        "pct": 3.4
+      },
+      {
+        "name": "Seasonal & Holiday",
+        "revenue": 19046.93000000002,
+        "pct": 3.2
+      },
+      {
+        "name": "Handbags & Wallets",
+        "revenue": 17632.26000000001,
+        "pct": 3.0
+      }
+    ],
+    "other": 342493.72000000183
+  },
+  "Antiques & Resale": {
+    "total": 427360.1900000023,
+    "subtypes": [
+      {
+        "name": "Furniture",
+        "revenue": 64343.28999999988,
+        "pct": 15.1
+      },
+      {
+        "name": "Home D\u00e9cor",
+        "revenue": 41330.15000000007,
+        "pct": 9.7
+      },
+      {
+        "name": "Seasonal & Holiday",
+        "revenue": 22939.53000000001,
+        "pct": 5.4
+      },
+      {
+        "name": "Vintage Glass & China",
+        "revenue": 20791.209999999992,
+        "pct": 4.9
+      },
+      {
+        "name": "Clothing (Womens)",
+        "revenue": 15399.549999999961,
+        "pct": 3.6
+      },
+      {
+        "name": "Art & Prints",
+        "revenue": 10998.199999999988,
+        "pct": 2.6
+      },
+      {
+        "name": "Candles & Fragrance",
+        "revenue": 9449.119999999999,
+        "pct": 2.2
+      }
+    ],
+    "other": 242109.14000000258
+  },
+  "Crafts & Handmade": {
+    "total": 199357.25000000108,
+    "subtypes": [
+      {
+        "name": "Handbags & Wallets",
+        "revenue": 17301.51,
+        "pct": 8.7
+      },
+      {
+        "name": "Skincare & Bath",
+        "revenue": 13315.139999999992,
+        "pct": 6.7
+      },
+      {
+        "name": "Seasonal & Holiday",
+        "revenue": 12873.999999999984,
+        "pct": 6.5
+      },
+      {
+        "name": "Art & Prints",
+        "revenue": 9827.839999999997,
+        "pct": 4.9
+      },
+      {
+        "name": "Furniture",
+        "revenue": 9122.959999999997,
+        "pct": 4.6
+      },
+      {
+        "name": "Home D\u00e9cor",
+        "revenue": 7548.7499999999845,
+        "pct": 3.8
+      },
+      {
+        "name": "Hats & Headwear",
+        "revenue": 6574.82,
+        "pct": 3.3
+      },
+      {
+        "name": "Leather Goods",
+        "revenue": 4772.0,
+        "pct": 2.4
+      },
+      {
+        "name": "Handmade Wood",
+        "revenue": 4421.56,
+        "pct": 2.2
+      }
+    ],
+    "other": 113598.66999999848
+  },
+  "Clothing": {
+    "total": 169078.47999999952,
+    "subtypes": [
+      {
+        "name": "Clothing (Womens)",
+        "revenue": 51717.83999999997,
+        "pct": 30.6
+      },
+      {
+        "name": "Tees & Sweatshirts",
+        "revenue": 13718.849999999995,
+        "pct": 8.1
+      },
+      {
+        "name": "Hats & Headwear",
+        "revenue": 12815.669999999996,
+        "pct": 7.6
+      },
+      {
+        "name": "Faith & Inspirational",
+        "revenue": 7845.949999999999,
+        "pct": 4.6
+      },
+      {
+        "name": "Jewelry",
+        "revenue": 4706.959999999996,
+        "pct": 2.8
+      }
+    ],
+    "other": 78273.21
+  },
+  "Kids & Baby": {
+    "total": 96313.39000000023,
+    "subtypes": [
+      {
+        "name": "Baby Products",
+        "revenue": 8242.27999999998,
+        "pct": 8.6
+      },
+      {
+        "name": "Toys & Plush",
+        "revenue": 7788.129999999992,
+        "pct": 8.1
+      },
+      {
+        "name": "Seasonal & Holiday",
+        "revenue": 7001.379999999995,
+        "pct": 7.3
+      },
+      {
+        "name": "Clothing (Womens)",
+        "revenue": 6562.599999999985,
+        "pct": 6.8
+      },
+      {
+        "name": "Jewelry",
+        "revenue": 1997.4600000000007,
+        "pct": 2.1
+      }
+    ],
+    "other": 64721.5400000002
+  },
+  "Food": {
+    "total": 95031.14000000265,
+    "subtypes": [
+      {
+        "name": "Food & Snacks",
+        "revenue": 39137.959999999985,
+        "pct": 41.2
+      }
+    ],
+    "other": 55893.1799999996
+  },
+  "Home Design & D\u00e9cor": {
+    "total": 60403.44000000044,
+    "subtypes": [
+      {
+        "name": "Home D\u00e9cor",
+        "revenue": 10422.159999999996,
+        "pct": 17.3
+      },
+      {
+        "name": "Seasonal & Holiday",
+        "revenue": 4082.539999999993,
+        "pct": 6.8
+      },
+      {
+        "name": "Art & Prints",
+        "revenue": 3568.869999999999,
+        "pct": 5.9
+      },
+      {
+        "name": "Furniture",
+        "revenue": 2827.749999999999,
+        "pct": 4.7
+      },
+      {
+        "name": "Candles & Fragrance",
+        "revenue": 1572.5700000000002,
+        "pct": 2.6
+      },
+      {
+        "name": "Plants",
+        "revenue": 1479.45,
+        "pct": 2.4
+      }
+    ],
+    "other": 36450.099999999955
+  },
+  "Mens": {
+    "total": 26714.16,
+    "subtypes": [
+      {
+        "name": "Clothing (Womens)",
+        "revenue": 7898.0,
+        "pct": 29.6
+      },
+      {
+        "name": "Tees & Sweatshirts",
+        "revenue": 3234.6800000000003,
+        "pct": 12.1
+      },
+      {
+        "name": "Hats & Headwear",
+        "revenue": 2068.8900000000003,
+        "pct": 7.7
+      },
+      {
+        "name": "Clothing (Mens)",
+        "revenue": 1839.99,
+        "pct": 6.9
+      },
+      {
+        "name": "Faith & Inspirational",
+        "revenue": 896.7999999999997,
+        "pct": 3.4
+      },
+      {
+        "name": "Skincare & Bath",
+        "revenue": 753.95,
+        "pct": 2.8
+      },
+      {
+        "name": "Candles & Fragrance",
+        "revenue": 744.7,
+        "pct": 2.8
+      },
+      {
+        "name": "Furniture",
+        "revenue": 595.0,
+        "pct": 2.2
+      }
+    ],
+    "other": 8682.14999999999
+  },
+  "Pets": {
+    "total": 16189.969999999881,
+    "subtypes": [
+      {
+        "name": "Pet Products",
+        "revenue": 1990.6600000000008,
+        "pct": 12.3
+      },
+      {
+        "name": "Seasonal & Holiday",
+        "revenue": 1147.9800000000005,
+        "pct": 7.1
+      },
+      {
+        "name": "Home D\u00e9cor",
+        "revenue": 760.7000000000002,
+        "pct": 4.7
+      },
+      {
+        "name": "Toys & Plush",
+        "revenue": 438.61,
+        "pct": 2.7
+      }
+    ],
+    "other": 11852.019999999933
+  }
+}

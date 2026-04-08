@@ -193,7 +193,7 @@ router.get('/splash/:business', (req, res) => {
     
     <div class="error-msg" id="error-msg">Please provide an email or phone number.</div>
     
-    <form method="POST" action="/portal/register" onsubmit="return validateForm()">
+    <form method="POST" id="wifi-form" action="/portal/register" onsubmit="handleSubmit(event)">
       <input type="hidden" name="client_mac" value="${esc(client_mac)}">
       <input type="hidden" name="ap_mac" value="${esc(ap_mac)}">
       <input type="hidden" name="ssid" value="${esc(ssid)}">
@@ -303,6 +303,37 @@ router.get('/splash/:business', (req, res) => {
         }
         err.style.display = 'none';
         return true;
+      }
+      async function handleSubmit(e) {
+        e.preventDefault();
+        if (!validateForm()) return;
+        var btn = document.querySelector('.btn');
+        btn.disabled = true;
+        btn.textContent = 'Connecting...';
+        var form = document.getElementById('wifi-form');
+        var data = new FormData(form);
+        try {
+          var resp = await fetch('/portal/register', { method: 'POST', body: data, redirect: 'manual' });
+          if (resp.type === 'opaqueredirect' || resp.status === 0) {
+            window.location.href = '/portal/success?' + new URLSearchParams({ url: data.get('redirect_url') || 'http://google.com', business: data.get('business') || '' });
+          } else if (resp.redirected) {
+            window.location.href = resp.url;
+          } else if (resp.status === 302 || resp.status === 303) {
+            window.location.href = resp.headers.get('Location') || '/portal/success';
+          } else {
+            var err = document.getElementById('error-msg');
+            err.textContent = 'Something went wrong. Please try again.';
+            err.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Connect to WiFi';
+          }
+        } catch(err) {
+          var errEl = document.getElementById('error-msg');
+          errEl.textContent = 'Connection error. Please try again.';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Connect to WiFi';
+        }
       }
     </script>
   </div>

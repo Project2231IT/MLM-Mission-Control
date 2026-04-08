@@ -1,11 +1,13 @@
 // Charts storage
 let charts = {};
+let _currentPage = 'dashboard';
 const LOCATION_NAMES = { TCF: 'The City Forum', D17: 'Dock 17', ACME: 'ACME Athletics', AHW: 'ACME Health & Wellness', MLC: "Miss Lucille's Café", MLM: "Miss Lucille's Marketplace" };
 const LOCATION_COLORS = { TCF: '#3b82f6', D17: '#10b981', ACME: '#f59e0b', AHW: '#14b8a6', MLC: '#ef4444', MLM: '#8b5cf6' };
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // Page navigation
 function showPage(name) {
+  _currentPage = name;
   // Hide all pages
   document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
   // Deactivate all nav items
@@ -17,7 +19,7 @@ function showPage(name) {
   const nav = document.getElementById(`nav-${name}`);
   if (nav) nav.classList.add('active');
   // Update title
-  const titles = { dashboard: 'Dashboard', customers: 'Customers', analytics: 'Analytics', locations: 'Locations', marketing: 'Marketing', settings: 'Settings' };
+  const titles = { dashboard: 'Dashboard', customers: 'Customers', analytics: 'Analytics', locations: 'Locations', marketing: 'Marketing', accounting: 'RADIUS Sessions', settings: 'Settings' };
   const titleEl = document.getElementById('page-title');
   if (titleEl) titleEl.textContent = titles[name] || name;
   // Update hash
@@ -28,6 +30,7 @@ function showPage(name) {
   if (name === 'analytics') loadAnalytics();
   if (name === 'locations') loadLocations();
   if (name === 'marketing') loadMarketing();
+  if (name === 'accounting') loadAccounting();
   if (name === 'settings') loadAdmin();
 }
 
@@ -37,16 +40,20 @@ function showTab(name) { showPage(name); }
 // Dashboard
 async function loadDashboard() {
   try {
-    const res = await fetch('/api/dashboard/stats');
-    if (res.status === 401) return window.location.href = '/login';
-    const data = await res.json();
-    renderDashboard(data);
+    const [statsRes, trendsRes] = await Promise.all([
+      fetch('/api/dashboard/stats'),
+      fetch('/api/dashboard/trends')
+    ]);
+    if (statsRes.status === 401) return window.location.href = '/login';
+    const data = await statsRes.json();
+    const trends = trendsRes.ok ? await trendsRes.json() : null;
+    renderDashboard(data, trends);
   } catch (err) {
     console.error('Dashboard load failed:', err);
   }
 }
 
-function renderDashboard(data) {
+function renderDashboard(data, trends) {
   const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setEl('kpi-total', data.totalGuests.toLocaleString());
   setEl('kpi-week', data.thisWeekGuests.toLocaleString());
@@ -77,6 +84,23 @@ function renderDashboard(data) {
       backgroundColor: ['#10b981', '#f59e0b'],
     }]
   });
+
+  // Customer Trend line chart (chart-trend)
+  if (trends && trends.daily && trends.daily.length) {
+    renderChart('chart-trend', 'line', {
+      labels: trends.daily.map(d => new Date(d.date).toLocaleDateString('en-US', {month:'short', day:'numeric'})),
+      datasets: [{
+        label: 'Customers',
+        data: trends.daily.map(d => d.count),
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.08)',
+        tension: 0.3,
+        fill: true,
+        pointRadius: 3,
+        pointBackgroundColor: '#2563eb'
+      }]
+    }, { plugins: { legend: { display: false } } });
+  }
 
   // Peak days
   const dayData = new Array(7).fill(0);
@@ -153,7 +177,7 @@ function renderDashboard(data) {
   }
 
   // Cross-location
-  const crossEl = document.getElementById('cross-location');
+  const crossEl = document.getElementById('cross-location-container');
   if (data.crossLocationVisitors.length === 0) {
     crossEl.innerHTML = '<p class="text-gray-500">No cross-location visitors yet</p>';
   } else {
@@ -166,7 +190,7 @@ function renderDashboard(data) {
           ${data.crossLocationVisitors.map(g => `
             <tr class="border-b border-gray-700/50">
               <td class="py-2">${esc(g.first_name || '')} ${esc(g.last_name || '')}</td>
-              <td class="py-2 text-gray-400">${esc(g.email)}</td>
+              <td class="py-2 text-gray-400">${g.email ? esc(g.email) : (g.mobile_phone || '-')}</td>
               <td class="py-2">${g.total_visits}</td>
               <td class="py-2">${(g.locations || []).map(l =>
                 `<span class="inline-block text-xs px-2 py-0.5 rounded-full mr-1" style="background:${LOCATION_COLORS[l] || '#6b7280'}33;color:${LOCATION_COLORS[l] || '#6b7280'}">${LOCATION_NAMES[l] || l}</span>`
@@ -301,9 +325,10 @@ async function searchCustomers(page = 1) {
   currentPage = page;
   const search = document.getElementById('cust-search')?.value || '';
   const location = document.getElementById('cust-location')?.value || 'all';
+  const segment = document.getElementById('cust-segment')?.value || 'all';
 
   try {
-    const res = await fetch(`/api/guests?search=${encodeURIComponent(search)}&location=${location}&page=${page}&limit=20`);
+    const res = await fetch(`/api/guests?search=${encodeURIComponent(search)}&location=${location}&segment=${segment}&page=${page}&limit=20`);
     if (res.status === 401) return window.location.href = '/login';
     const data = await res.json();
     renderCustomersTable(data);
@@ -335,7 +360,7 @@ function renderCustomersTable(data) {
     tbody.innerHTML = data.guests.map(g => `
       <tr class="border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onclick="showCustomerDetail(${g.id})">
         <td class="py-3 px-4 font-medium text-slate-800">${esc(g.first_name || '')} ${esc(g.last_name || '')}</td>
-        <td class="py-3 px-4 text-slate-500">${esc(g.email || '')}</td>
+        <td class="py-3 px-4 text-slate-500">${g.email ? esc(g.email) : (g.mobile_phone || '-')}</td>
         <td class="py-3 px-4">${(g.locations || []).map(l =>
           `<span class="inline-block text-xs px-2 py-0.5 rounded-full mr-1" style="background:${LOCATION_COLORS[l] || '#6b7280'}15;color:${LOCATION_COLORS[l] || '#6b7280'};border:1px solid ${LOCATION_COLORS[l] || '#6b7280'}30">${LOCATION_NAMES[l] || l}</span>`
         ).join('')}</td>
@@ -412,6 +437,28 @@ function exportCsv() {
 }
 
 // Analytics
+// Drill-down from KPI cards
+function drillDown(type) {
+  if (type === 'locations') {
+    showPage('locations');
+    return;
+  }
+  
+  // Navigate to customers page with filter pre-set
+  showPage('customers');
+  
+  // Set the segment filter
+  const segmentEl = document.getElementById('cust-segment');
+  if (segmentEl) {
+    if (type === 'all') segmentEl.value = 'all';
+    else if (type === 'new') segmentEl.value = 'new';
+    else if (type === 'returning') segmentEl.value = 'returning';
+  }
+  
+  // Trigger search with the filter
+  searchCustomers(1);
+}
+
 function setGrowthRange(range) {
   // Update active button
   document.querySelectorAll('.range-btn').forEach(b => {
@@ -436,8 +483,10 @@ async function loadAnalytics() {
     ]);
 
     // Growth chart
+    console.log('[DEBUG] trendsRes.ok:', trendsRes.ok, 'status:', trendsRes.status);
     if (trendsRes.ok) {
       const trends = await trendsRes.json();
+      console.log('[DEBUG] trends data:', JSON.stringify(trends.daily?.slice(0,3)));
       if (trends.daily && trends.daily.length) {
         renderChart('chart-growth', 'line', {
           labels: trends.daily.map(d => new Date(d.date).toLocaleDateString('en-US', {month:'short', day:'numeric'})),
@@ -516,6 +565,66 @@ async function loadAnalytics() {
     }
 
   } catch(e) { console.error('Analytics load failed:', e); }
+}
+
+// RADIUS Accounting
+async function loadAccounting() {
+  try {
+    const res = await fetch('/api/dashboard/accounting');
+    if (!res.ok) return;
+    const d = await res.json();
+
+    // KPIs
+    const totalEl = document.getElementById('acct-total');
+    const activeEl = document.getElementById('acct-active');
+    const avgDurEl = document.getElementById('acct-avg-dur');
+    const ssidsEl = document.getElementById('acct-ssids');
+    if (totalEl) totalEl.textContent = d.totalSessions.toLocaleString();
+    if (activeEl) activeEl.textContent = d.activeNow.toLocaleString();
+    if (avgDurEl) avgDurEl.textContent = formatDuration(d.avgDurationSec);
+    if (ssidsEl) ssidsEl.textContent = d.uniqueSsids.toLocaleString();
+    const updEl = document.getElementById('acct-updated');
+    if (updEl) updEl.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+
+    // Active sessions
+    const actBody = document.getElementById('acct-active-tbody');
+    if (actBody) {
+      if (!d.activeSessions.length) {
+        actBody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">No active sessions</td></tr>';
+      } else {
+        actBody.innerHTML = d.activeSessions.map(s => `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3">${esc(s.username || '-')}</td>
+            <td class="py-3 text-slate-500 font-mono text-xs">${esc(s.mac_address || '-')}</td>
+            <td class="py-3">${esc(s.ssid || '-')}</td>
+            <td class="py-3"><span class="inline-block text-xs px-2 py-0.5 rounded-full" style="background:${LOCATION_COLORS[s.location_code]||'#6b7280'}15;color:${LOCATION_COLORS[s.location_code]||'#6b7280'}">${LOCATION_NAMES[s.location_code] || s.location_code || '-'}</span></td>
+            <td class="py-3 text-slate-500 font-mono text-xs">${esc(s.framed_ip_address || '-')}</td>
+            <td class="py-3 text-slate-400 text-xs">${s.start_time ? new Date(s.start_time).toLocaleString() : '-'}</td>
+            <td class="py-3 text-emerald-600 font-medium">${formatDuration(Math.floor((Date.now() - new Date(s.start_time)) / 1000))}</td>
+          </tr>`).join('');
+      }
+    }
+
+    // Recent sessions
+    const recBody = document.getElementById('acct-recent-tbody');
+    if (recBody) {
+      if (!d.recentSessions.length) {
+        recBody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400">No session history</td></tr>';
+      } else {
+        recBody.innerHTML = d.recentSessions.map(s => `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3">${esc(s.username || '-')}</td>
+            <td class="py-3 text-slate-500 font-mono text-xs">${esc(s.mac_address || '-')}</td>
+            <td class="py-3">${esc(s.ssid || '-')}</td>
+            <td class="py-3"><span class="inline-block text-xs px-2 py-0.5 rounded-full" style="background:${LOCATION_COLORS[s.location_code]||'#6b7280'}15;color:${LOCATION_COLORS[s.location_code]||'#6b7280'}">${LOCATION_NAMES[s.location_code] || s.location_code || '-'}</span></td>
+            <td class="py-3 text-slate-400 text-xs">${s.start_time ? new Date(s.start_time).toLocaleString() : '-'}</td>
+            <td class="py-3 text-slate-400 text-xs">${s.stop_time ? new Date(s.stop_time).toLocaleString() : '-'}</td>
+            <td class="py-3 text-slate-500">${formatDuration(s.duration_seconds || 0)}</td>
+            <td class="py-3 text-slate-400 text-xs">${esc(s.acct_terminate_cause || '-')}</td>
+          </tr>`).join('');
+      }
+    }
+  } catch(e) { console.error('Accounting load failed:', e); }
 }
 
 // Locations
@@ -730,8 +839,7 @@ async function testWebhook() {
 }
 
 function refreshCurrentPage() {
-  const active = document.querySelector('.nav-item.active');
-  if (active) active.click();
+  showPage(_currentPage);
 }
 
 function sortGuests(field) {

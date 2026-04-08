@@ -1,0 +1,66 @@
+sql {
+    driver = "rlm_sql_postgresql"
+    server = "postgres"
+    port = 5432
+    login = "guestadmin"
+    password = "GuestWifi2024Secure"
+    radius_db = "guest_wifi"
+
+    read_groups = no
+    read_profiles = no
+
+    accounting_table = "radius_accounting"
+
+    accounting_start_query = "\
+      INSERT INTO radius_accounting (\
+        acct_session_id, acct_unique_id, username, realm, nas_ip_address, \
+        nas_port_id, nas_port_type, start_time, update_time, \
+        acquired_ip, calling_station_id, called_station_id, \
+        mac_address, ap_mac, ssid, location_code \
+      ) VALUES (\
+        '%{Acct-Session-ID}', \
+        '%{Acct-Unique-Session-ID}', \
+        '%{User-Name}', \
+        '%{Realm}', \
+        '%{NAS-IP-Address}', \
+        '%{NAS-Port-ID}', \
+        '%{NAS-Port-Type}', \
+        TO_TIMESTAMP(%{Acct-Start-Time}), \
+        TO_TIMESTAMP(%{Acct-Start-Time}), \
+        '%{Framed-IP-Address}', \
+        '%{Calling-Station-Id}', \
+        '%{Called-Station-Id}', \
+        '%{Calling-Station-Id}', \
+        '%{Called-Station-Id}', \
+        '%{SSID}', \
+        '%{SQL-User-Name}' \
+      )"
+
+    accounting_update_query = "\
+      UPDATE radius_accounting SET \
+        update_time = TO_TIMESTAMP(%{Acct-Update-Time}), \
+        acct_interval = %{Acct-Interval}, \
+        acct_input_packets = COALESCE(%{Acct-Input-Packets}, 0), \
+        acct_output_packets = COALESCE(%{Acct-Output-Packets}, 0), \
+        acct_stop_downstream = %{Acct-Input-Gigawords}*4294967296 + %{Acct-Input-Octets}, \
+        acct_stop_upstream = %{Acct-Output-Gigawords}*4294967296 + %{Acct-Output-Octets} \
+      WHERE acct_session_id = '%{Acct-Session-ID}' AND username = '%{User-Name}'"
+
+    accounting_stop_query = "\
+      UPDATE radius_accounting SET \
+        stop_time = TO_TIMESTAMP(%{Acct-Stop-Time}), \
+        update_time = TO_TIMESTAMP(%{Acct-Stop-Time}), \
+        acct_session_time = %{Acct-Session-Time}, \
+        acct_interval = %{Acct-Interval}, \
+        acct_input_packets = COALESCE(%{Acct-Input-Packets}, 0), \
+        acct_output_packets = COALESCE(%{Acct-Output-Packets}, 0), \
+        acct_terminate_cause = '%{Acct-Terminate-Cause}', \
+        service_type = '%{Service-Type}', \
+        framed_protocol = '%{Framed-Protocol}', \
+        framed_ip_address = '%{Framed-IP-Address}', \
+        acct_stop_downstream = COALESCE(acct_stop_downstream, %{Acct-Input-Gigawords}*4294967296 + %{Acct-Input-Octets}), \
+        acct_stop_upstream = COALESCE(acct_stop_upstream, %{Acct-Output-Gigawords}*4294967296 + %{Acct-Output-Octets}) \
+      WHERE acct_session_id = '%{Acct-Session-ID}' AND username = '%{User-Name}'"
+
+    group_membership_query = ""
+}

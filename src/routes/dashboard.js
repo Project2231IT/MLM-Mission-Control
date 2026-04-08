@@ -90,6 +90,56 @@ router.get('/overview', async (req, res) => {
   }
 });
 
+// GET /api/dashboard/accounting — RADIUS accounting sessions
+router.get('/accounting', async (req, res) => {
+  try {
+    const [active, recent, stats] = await Promise.all([
+      // Active sessions (no stop_time)
+      pool.query(`
+        SELECT * FROM guest_sessions
+        WHERE active_session = true
+        ORDER BY start_time DESC
+        LIMIT 100
+      `),
+      // Recent stopped sessions
+      pool.query(`
+        SELECT * FROM guest_sessions
+        WHERE active_session = false
+        ORDER BY stop_time DESC
+        LIMIT 100
+      `),
+      // Aggregate stats
+      pool.query(`
+        SELECT
+          COUNT(*) FILTER (WHERE active_session = false) as total_sessions,
+          COUNT(*) FILTER (WHERE active_session = true) as active_sessions,
+          ROUND(AVG(duration_seconds) FILTER (WHERE active_session = false))::int as avg_duration_sec,
+          COUNT(DISTINCT ssid) as unique_ssids,
+          COUNT(DISTINCT location_code) FILTER (WHERE location_code IS NOT NULL AND location_code != '') as unique_locations,
+          SUM(acct_input_packets) FILTER (WHERE active_session = false) as total_input_packets,
+          SUM(acct_output_packets) FILTER (WHERE active_session = false) as total_output_packets
+        FROM guest_sessions
+      `),
+    ]);
+
+    const s = stats.rows[0];
+    res.json({
+      activeSessions: active.rows,
+      recentSessions: recent.rows,
+      totalSessions: parseInt(s.total_sessions) || 0,
+      activeNow: parseInt(s.active_sessions) || 0,
+      avgDurationSec: parseInt(s.avg_duration_sec) || 0,
+      uniqueSsids: parseInt(s.unique_ssids) || 0,
+      uniqueLocations: parseInt(s.unique_locations) || 0,
+      totalInputPackets: parseInt(s.total_input_packets) || 0,
+      totalOutputPackets: parseInt(s.total_output_packets) || 0,
+    });
+  } catch (err) {
+    console.error('Accounting error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/dashboard/trends — time series data
 router.get('/trends', async (req, res) => {
   try {

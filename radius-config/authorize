@@ -1,0 +1,3 @@
+# Accept all guest connections - authentication is handled by the splash portal
+# FreeRADIUS just rubber-stamps the approval
+DEFAULT Auth-Type := Accept

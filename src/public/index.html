@@ -157,6 +157,10 @@
         class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500">
         <span class="text-base">📈</span> Analytics
       </button>
+      <button onclick="showPage('accounting')" id="nav-accounting"
+        class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500">
+        <span class="text-base">📡</span> RADIUS Sessions
+      </button>
       <button onclick="showPage('marketing')" id="nav-marketing"
         class="nav-item w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg mb-0.5 text-slate-500">
         <span class="text-base">✉️</span> Marketing
@@ -203,40 +207,40 @@
 
         <!-- KPI row -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm cursor-pointer" onclick="drillDown('all')">
             <div class="flex items-start justify-between mb-3">
               <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Customers</div>
               <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-base">👥</div>
             </div>
             <div class="text-3xl font-bold text-slate-800 mb-0.5" id="kpi-total">—</div>
-            <div class="text-xs text-slate-400">All time</div>
+            <div class="text-xs text-slate-400">All time · Click to view</div>
           </div>
 
-          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm cursor-pointer" onclick="drillDown('new')">
             <div class="flex items-start justify-between mb-3">
               <div class="text-xs font-semibold text-blue-500 uppercase tracking-wide">New This Week</div>
               <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-base">✨</div>
             </div>
             <div class="text-3xl font-bold text-blue-600 mb-0.5" id="kpi-week">—</div>
-            <div class="text-xs text-slate-400">Past 7 days</div>
+            <div class="text-xs text-slate-400">Past 7 days · Click to view</div>
           </div>
 
-          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm cursor-pointer" onclick="drillDown('returning')">
             <div class="flex items-start justify-between mb-3">
               <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Returning</div>
               <div class="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center text-base">🔄</div>
             </div>
             <div class="text-3xl font-bold text-emerald-600 mb-0.5" id="kpi-returning-pct">—</div>
-            <div class="text-xs text-slate-400" id="kpi-returning-sub">— returning customers</div>
+            <div class="text-xs text-slate-400" id="kpi-returning-sub">— returning customers · Click to view</div>
           </div>
 
-          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="kpi-card bg-white rounded-xl p-5 border border-slate-200 shadow-sm cursor-pointer" onclick="drillDown('locations')">
             <div class="flex items-start justify-between mb-3">
               <div class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Active Locations</div>
               <div class="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center text-base">📍</div>
             </div>
             <div class="text-3xl font-bold text-violet-600 mb-0.5" id="kpi-locations">—</div>
-            <div class="text-xs text-slate-400">Businesses</div>
+            <div class="text-xs text-slate-400">Businesses · Click to view</div>
           </div>
         </div>
 
@@ -319,10 +323,14 @@
               <label class="block text-xs font-medium text-slate-500 mb-1">Segment</label>
               <select id="cust-segment"
                 class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                <option value="all">All</option>
+                <option value="all">All Customers</option>
                 <option value="new">New (1 visit)</option>
                 <option value="returning">Returning (2+)</option>
-                <option value="lapsed">Lapsed</option>
+                <option value="regular">Regular (3+)</option>
+                <option value="vip">VIP (5+)</option>
+                <option value="lapsed30">Lapsed 30 days</option>
+                <option value="lapsed60">Lapsed 60 days</option>
+                <option value="lapsed90">Lapsed 90 days</option>
               </select>
             </div>
             <div>
@@ -430,6 +438,88 @@
           <div id="cross-location-container"></div>
         </div>
       </div><!-- /page-analytics -->
+
+
+      <!-- ══════════════ RADIUS ACCOUNTING ══════════════ -->
+      <div id="page-accounting" class="hidden page-content">
+
+        <!-- Header with refresh -->
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-semibold text-slate-700">RADIUS Accounting</h2>
+          <button onclick="loadAccounting()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+            <span>↻</span> Refresh
+          </button>
+        </div>
+        <div class="text-xs text-slate-400 mb-4" id="acct-updated"></div>
+
+        <!-- KPI row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="acct-kpis">
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Total Sessions</div>
+            <div class="text-2xl font-bold text-slate-800" id="acct-total">—</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Active Now</div>
+            <div class="text-2xl font-bold text-emerald-600" id="acct-active">—</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Avg Duration</div>
+            <div class="text-2xl font-bold text-slate-800" id="acct-avg-dur">—</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Unique SSIDs</div>
+            <div class="text-2xl font-bold text-slate-800" id="acct-ssids">—</div>
+          </div>
+        </div>
+
+        <!-- Active sessions -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+          <h3 class="font-semibold text-slate-700 text-sm mb-4">Active Sessions</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left border-b border-slate-100">
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Username</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">MAC</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">SSID</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Location</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">IP Address</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Started</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Duration</th>
+                </tr>
+              </thead>
+              <tbody id="acct-active-tbody" class="divide-y divide-slate-50">
+                <tr><td colspan="7" class="py-6 text-center text-slate-400">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent sessions -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="font-semibold text-slate-700 text-sm mb-4">Recent Sessions</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left border-b border-slate-100">
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Username</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">MAC</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">SSID</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Location</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Started</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Ended</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Duration</th>
+                  <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Terminate Cause</th>
+                </tr>
+              </thead>
+              <tbody id="acct-recent-tbody" class="divide-y divide-slate-50">
+                <tr><td colspan="8" class="py-6 text-center text-slate-400">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /page-accounting -->
 
 
       <!-- ══════════════ MARKETING ══════════════ -->
@@ -715,6 +805,6 @@
     </div>
   </div>
 
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js?v=3"></script>
 </body>
 </html>

@@ -1,0 +1,46 @@
+server default {
+    # Auth port
+    listen {
+        type = auth
+        ipaddr = *
+        port = 1812
+    }
+
+    # Accounting port
+    listen {
+        type = acct
+        ipaddr = *
+        port = 1813
+    }
+
+    authorize {
+        files
+    }
+
+    authenticate {
+        Auth-Type Accept {
+            ok
+        }
+    }
+
+    # Capture accounting records in SQL
+    accounting {
+        detail
+        sql
+    }
+
+    # Session block for interim-update handling
+    session {
+        sql
+    }
+
+    # Preacct for session ID tracking
+    preacct {
+        preprocess
+    }
+
+    # Post-auth for updating session info
+    post-auth {
+        ok
+    }
+}

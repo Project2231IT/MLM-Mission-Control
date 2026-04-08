@@ -5,14 +5,14 @@ const router = express.Router();
 // Search guests
 router.get('/guests', async (req, res) => {
   try {
-    const { search, location, page = 1, limit = 50 } = req.query;
+    const { search, location, segment, page = 1, limit = 50 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     let conditions = [];
     let params = [];
     let paramIdx = 1;
 
     if (search) {
-      conditions.push(`(g.email ILIKE $${paramIdx} OR g.first_name ILIKE $${paramIdx} OR g.last_name ILIKE $${paramIdx})`);
+      conditions.push(`(g.email ILIKE $${paramIdx} OR g.first_name ILIKE $${paramIdx} OR g.last_name ILIKE $${paramIdx} OR g.mobile_phone ILIKE $${paramIdx})`);
       params.push(`%${search}%`);
       paramIdx++;
     }
@@ -21,6 +21,23 @@ router.get('/guests', async (req, res) => {
       conditions.push(`EXISTS (SELECT 1 FROM visits v2 WHERE v2.guest_id = g.id AND v2.location_code = $${paramIdx})`);
       params.push(location);
       paramIdx++;
+    }
+
+    // Segment filter
+    if (segment === 'new') {
+      conditions.push('g.total_visits = 1');
+    } else if (segment === 'returning') {
+      conditions.push('g.total_visits > 1');
+    } else if (segment === 'lapsed30') {
+      conditions.push("g.last_seen < NOW() - INTERVAL '30 days'");
+    } else if (segment === 'lapsed60') {
+      conditions.push("g.last_seen < NOW() - INTERVAL '60 days'");
+    } else if (segment === 'lapsed90') {
+      conditions.push("g.last_seen < NOW() - INTERVAL '90 days'");
+    } else if (segment === 'vip') {
+      conditions.push('g.total_visits >= 5');
+    } else if (segment === 'regular') {
+      conditions.push('g.total_visits >= 3');
     }
 
     const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';

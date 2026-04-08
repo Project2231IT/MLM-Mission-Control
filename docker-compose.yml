@@ -1,8 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
-    build: .
+    image: guest-wifi-analytics:latest
     ports:
       - "3700:3700"
     environment:
@@ -12,10 +12,11 @@ services:
       - DB_PORT=5432
       - DB_NAME=guest_wifi
       - DB_USER=guestadmin
-      - DB_PASSWORD=GuestWifi2024!Secure
-      - SESSION_SECRET=p2231-guest-wifi-session-secret-change-me
+      - DB_PASSWORD=GuestWifi2024Secure
+      - SESSION_SECRET=p2231session2026
       - ADMIN_USER=admin
-      - ADMIN_PASS=P2231Guest@Admin
+      - ADMIN_PASS=P2231GuestAdmin
+      - RADIUS_SECRET=P2231GuestRadius2026
     depends_on:
       postgres:
         condition: service_healthy
@@ -26,9 +27,9 @@ services:
     environment:
       - POSTGRES_DB=guest_wifi
       - POSTGRES_USER=guestadmin
-      - POSTGRES_PASSWORD=GuestWifi2024!Secure
+      - POSTGRES_PASSWORD=GuestWifi2024Secure
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - guest_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U guestadmin -d guest_wifi"]
       interval: 5s
@@ -36,5 +37,26 @@ services:
       retries: 5
     restart: unless-stopped
 
+  radius:
+    image: freeradius/freeradius-server:latest
+    volumes:
+      - ./radius-config/clients.conf:/etc/freeradius/clients.conf
+      - ./radius-config/authorize:/etc/freeradius/mods-config/files/authorize
+      - ./radius-config/sites-enabled/default:/etc/freeradius/sites-enabled/default
+      - ./radius-config/mods-enabled/sql:/etc/freeradius/mods-enabled/sql
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    dns:
+      - 10.200.5.2
+    networks:
+      - guest-analytics_default
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c", "/docker-entrypoint.sh freeradius -f -l stdout; sleep infinity"]
+
 volumes:
-  pgdata:
+  guest_pgdata:
+
+networks:
+  guest-analytics_default:
+    external: true

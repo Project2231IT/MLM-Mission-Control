@@ -482,7 +482,6 @@ router.get('/success', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="3;url=${esc(redirectUrl)}">
   <title>Connected!</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -510,17 +509,36 @@ router.get('/success', (req, res) => {
     .biz { font-weight: 600; color: #333; }
     .redirect { margin-top: 24px; font-size: 12px; color: #999; }
     a { color: ${primaryColor}; }
+    .connected-banner {
+      background: #dcfce7;
+      border: 2px solid #22c55e;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      color: #166534;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .connected-banner span { font-size: 20px; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="check">✅</div>
     <h1>You're Connected!</h1>
-    <p>Enjoy free WiFi at <span class="biz">${esc(bizName)}</span></p>
-    <div class="redirect">
-      Redirecting in 3 seconds...<br>
-      <a href="${esc(redirectUrl)}">Click here</a> if not redirected.
+    <div class="connected-banner">
+      <span>📶</span> Your device is now connected to the WiFi network.
     </div>
+    <p>Enjoy free WiFi at <span class="biz">${esc(bizName)}</span></p>
+    <div class="redirect" id="redirect-msg" style="display:none">
+      <a href="${esc(redirectUrl)}">Click here</a> to start browsing.
+    </div>
+    <script>
+      // Show redirect after 5 seconds - but user stays connected regardless
+      setTimeout(function() {
+        document.getElementById('redirect-msg').style.display = 'block';
+      }, 5000);
+    </script>
   </div>
 </body>
 </html>`;

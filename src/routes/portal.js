@@ -265,27 +265,36 @@ router.get('/splash/:business', (req, res) => {
       function validateForm() {
         var mode = document.getElementById('contact_method').value;
         var err = document.getElementById('error-msg');
+        // DEBUG: show what's happening
+        var emailEl = document.getElementById('email');
+        var phoneEl = document.getElementById('phone');
+        var emailVal = emailEl ? emailEl.value.trim() : '';
+        var phoneVal = phoneEl ? phoneEl.value.trim().replace(/[^0-9]/g, '') : '';
+        var emailOptinEl = document.getElementById('email_marketing_optin');
+        var phoneOptinEl = document.getElementById('marketing_optin');
+        var debug = 'mode=' + mode + ' email=' + emailVal + ' phone=' + phoneVal + ' emailOptin=' + (emailOptinEl ? emailOptinEl.checked : 'N/A') + ' phoneOptin=' + (phoneOptinEl ? phoneOptinEl.checked : 'N/A');
+        console.log(debug);
         if (mode === 'email') {
-          var email = document.getElementById('email').value.trim();
+          var email = emailVal;
           if (!email || email.indexOf('@') === -1) {
             err.textContent = 'Please enter a valid email address.';
             err.style.display = 'block';
             return false;
           }
-          var emailOptin = document.getElementById('email_marketing_optin');
+          var emailOptin = emailOptinEl;
           if (!emailOptin.checked) {
             err.textContent = 'Please agree to receive marketing emails to connect.';
             err.style.display = 'block';
             return false;
           }
         } else {
-          var phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, '');
+          var phone = phoneVal;
           if (phone.length < 10) {
             err.textContent = 'Please enter a valid phone number.';
             err.style.display = 'block';
             return false;
           }
-          var optin = document.getElementById('marketing_optin');
+          var optin = phoneOptinEl;
           if (!optin.checked) {
             err.textContent = 'Please agree to receive marketing messages to use phone number sign-in.';
             err.style.display = 'block';

@@ -210,6 +210,12 @@ router.get('/splash/:business', (req, res) => {
       <div class="field-group" id="email-group">
         <label for="email">Email Address *</label>
         <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email">
+        <div class="optin-row" style="display:block">
+          <label>
+            <input type="checkbox" name="email_marketing_optin" id="email_marketing_optin" value="yes">
+            I agree to receive marketing emails including special offers and promotions. You may unsubscribe at any time.
+          </label>
+        </div>
       </div>
       
       <div class="field-group hidden" id="phone-group">
@@ -266,6 +272,12 @@ router.get('/splash/:business', (req, res) => {
             err.style.display = 'block';
             return false;
           }
+          var emailOptin = document.getElementById('email_marketing_optin');
+          if (!emailOptin.checked) {
+            err.textContent = 'Please agree to receive marketing emails to connect.';
+            err.style.display = 'block';
+            return false;
+          }
         } else {
           var phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, '');
           if (phone.length < 10) {
@@ -301,7 +313,7 @@ router.get('/splash', (req, res) => {
 // POST /portal/register - Handle guest registration
 router.post('/register', async (req, res) => {
   try {
-    const { email, phone, first_name, last_name, client_mac, ap_mac, ssid, redirect_url, login_url, business, contact_method, marketing_optin } = req.body;
+    const { email, phone, first_name, last_name, client_mac, ap_mac, ssid, redirect_url, login_url, business, contact_method, marketing_optin, email_marketing_optin } = req.body;
     const biz = getBusiness(business);
     const locationCode = biz ? biz.code.toUpperCase() : 'UNK';
 
@@ -420,7 +432,7 @@ router.post('/register', async (req, res) => {
                 ssid: ssid || '',
                 location: locationCode,
                 contact_method: usePhone ? 'phone' : 'email',
-                marketing_optin: marketing_optin === 'yes',
+                marketing_optin: marketing_optin === 'yes' || email_marketing_optin === 'yes',
                 timestamp: new Date().toISOString()
               }
             })

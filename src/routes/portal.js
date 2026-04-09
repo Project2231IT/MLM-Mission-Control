@@ -570,14 +570,9 @@ router.get('/success', (req, res) => {
       <span>📶</span> Your device is now connected to the WiFi network.
     </div>
     <p>Enjoy free WiFi at <span class="biz">${esc(bizName)}</span></p>
-    <div class="redirect" id="redirect-msg" style="display:none">
-      <a href="${esc(redirectUrl)}">Click here</a> to start browsing.
-    </div>
     <script>
-      // Show redirect after 5 seconds - but user stays connected regardless
-      setTimeout(function() {
-        document.getElementById('redirect-msg').style.display = 'block';
-      }, 5000);
+      // Auto-redirect to captive.apple.com after 2 seconds to verify internet access
+      setTimeout(function() { window.location.href = 'http://captive.apple.com'; }, 2000);
     </script>
   </div>
 </body>

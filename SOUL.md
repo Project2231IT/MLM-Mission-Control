@@ -37,7 +37,7 @@ If you change this file, tell the user — it's your soul, and they should know.
 
 **Repository:** `https://github.com/Project2231IT/MLM-Mission-Control` (workspace branch)
 
-**GitHub PAT:** stored in `~/.git-credentials` on `jakesopenclaw`. Token expires ~yearly — if push fails with 403, regenerate at github.com/settings/tokens and update `~/.git-credentials`.
+**GitHub PAT:** stored in `~/.git-credentials` on `jakesopenclaw`. Scoped to MLM-Mission-Control repo. Token expires ~yearly — if push fails with 403, regenerate at github.com/settings/tokens and update `~/.git-credentials`.
 
 **Note:** `wazuh-gcp-reader.json` is gitignored — contains GCP service account private key. Back up separately if needed.
 

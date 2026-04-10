@@ -1,0 +1,10 @@
+<!--
+  Decoder for Google Workspace Drive Audit (text format)
+  Parses: GCP_DRIVE event=X actor=X file=X vis=X internal=X ip=X
+-->
+<decoder name="gcp-drive-log">
+  <parent>json</parent>
+  <prematch>^GCP_DRIVE</prematch>
+  <regex>^GCP_DRIVE event=(\S+) actor=(\S+) file=(\S+) vis=(\S+) internal=(\S+) ip=(\S+) region=(\S+) owner=(\S+) app=(\S+)</regex>
+  <order>event_name, actor_email, file_name, visibility, is_internal_actor, ip_address, region, file_owner, originating_app</order>
+</decoder>

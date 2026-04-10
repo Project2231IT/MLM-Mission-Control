@@ -1,0 +1,89 @@
+<!--
+  Google Workspace Drive Audit Rules for Wazuh
+  Rule IDs: 9010-9099
+-->
+<group name="gcp,gcp-drive">
+  <rule id="9010" level="3">
+    <if_sid>65000</if_sid>
+    <field name="location">gcp-drive-wodle</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive event</description>
+  </rule>
+
+  <rule id="9011" level="3">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">access_item_content</field>
+    <options>no_full_log</options>
+    <description>Drive: file content accessed</description>
+  </rule>
+
+  <rule id="9012" level="3">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">view</field>
+    <options>no_full_log</options>
+    <description>Drive: file viewed</description>
+  </rule>
+
+  <rule id="9013" level="5">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">edit</field>
+    <options>no_full_log</options>
+    <description>Drive: file edited</description>
+  </rule>
+
+  <rule id="9014" level="6">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">download</field>
+    <options>no_full_log</options>
+    <description>Drive: file downloaded</description>
+  </rule>
+
+  <rule id="9015" level="6">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">share</field>
+    <options>no_full_log</options>
+    <description>Drive: file shared</description>
+  </rule>
+
+  <rule id="9016" level="7">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">delete</field>
+    <options>no_full_log</options>
+    <description>Drive: file deleted</description>
+  </rule>
+
+  <rule id="9017" level="6">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">unshare</field>
+    <options>no_full_log</options>
+    <description>Drive: sharing removed</description>
+  </rule>
+
+  <rule id="9018" level="6">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">modify_permissions</field>
+    <options>no_full_log</options>
+    <description>Drive: permissions modified</description>
+  </rule>
+
+  <rule id="9019" level="4">
+    <if_sid>9010</if_sid>
+    <field name="data.event_name">create</field>
+    <options>no_full_log</options>
+    <description>Drive: file created</description>
+  </rule>
+
+  <rule id="9020" level="6">
+    <if_sid>9010</if_sid>
+    <field name="data.visibility">shared_externally</field>
+    <options>no_full_log</options>
+    <description>Drive: file shared externally</description>
+  </rule>
+
+  <rule id="9021" level="5">
+    <if_sid>9010</if_sid>
+    <field name="data.is_internal_actor">False</field>
+    <options>no_full_log</options>
+    <description>Drive: external actor activity</description>
+  </rule>
+</group>

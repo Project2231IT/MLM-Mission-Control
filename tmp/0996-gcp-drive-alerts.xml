@@ -1,0 +1,67 @@
+<!--
+  Google Workspace Drive Audit Alert Rules
+  Uses text-based log format: GCP_DRIVE event=X actor=X file=X vis=X internal=X ip=X
+  Parent rule: 5402 (GCP integration matched via location field)
+  Child rules: 9030-9039 for specific alert triggering
+-->
+<group name="gcp,gcp-drive,google-workspace-drive">
+  
+  <!-- File downloaded -->
+  <rule id="9030" level="6">
+    <if_sid>5402</if_sid>
+    <field name="extra_data">^event=download</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive: file downloaded</description>
+    <additional_info>File download detected from Google Drive</additional_info>
+  </rule>
+
+  <!-- File shared externally -->
+  <rule id="9031" level="7">
+    <if_sid>5402</if_sid>
+    <field name="extra_data">^vis=shared_externally</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive: file shared externally</description>
+    <additional_info>File shared with external domain</additional_info>
+  </rule>
+
+  <!-- File shared -->
+  <rule id="9032" level="6">
+    <if_sid>5402</if_sid>
+    <field name="extra_data">^event=share</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive: file shared</description>
+  </rule>
+
+  <!-- Permission modified -->
+  <rule id="9033" level="6">
+    <if_sid>5402</if_sid>
+    <field name="extra_data">^event=modify_permissions</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive: permissions modified</description>
+  </rule>
+
+  <!-- File deleted -->
+  <rule id="9034" level="7">
+    <if_sid>5402</if_sid>
+    <field name="extra_data">^event=delete</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive: file deleted</description>
+  </rule>
+
+  <!-- Sharing removed -->
+  <rule id="9035" level="7">
+    <if_sid>5402</if_sid>
+    <field name="extra_data">^event=unshare</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive: sharing removed</description>
+  </rule>
+
+  <!-- External actor activity -->
+  <rule id="9036" level="5">
+    <if_sid>5402</if_sid>
+    <field name="extra_data">^internal=False</field>
+    <options>no_full_log</options>
+    <description>Google Workspace Drive: external actor activity</description>
+  </rule>
+
+</group>

@@ -1,0 +1,11 @@
+<!--
+  Google Workspace Drive Audit Rules for Wazuh
+  Rule ID: 9010 (matches GCP integration by location)
+-->
+<group name="gcp,gcp-drive">
+  <rule id="9010" level="3">
+    <if_sid>65000</if_sid>
+    <field name="location">gcp-drive-wodle</field>
+    <description>Google Workspace Drive event</description>
+  </rule>
+</group>

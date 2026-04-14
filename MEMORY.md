@@ -31,13 +31,19 @@ Dock 17 · Miss Lucilles Marketplace · Miss Lucilles Cafe · ACME · ACME Healt
 - **Dashboard login**: admin / P2231-Wazuh.Idx#73faf1a834b7
 - **mrcrabs sudo**: Crabbie@123 (all 3 boxes, NOPASSWD on .18/.19/.20)
 
+### Wazuh Monitoring
+- **SNMP**: Enabled on Manager (.19), UDP 161, community "public"
+- **SNMP extends**: `wazuh-manager-status` (returns "active"), `wazuh-api-port` (returns "UP")
+- **Auto-restart**: systemd Restart=always, 10s delay
+- **5-min cron**: Checks service + API port, auto-restart if down
+- **UptimeKuma**: Push monitor integrated (`http://172.16.201.15:3001/api/push/uk1_fSO9bC3bMK7l1oRlt2ydsIVJI7QimLKCmQo7mNDR`)
+
 ### Wazuh Notes
 - Dashboard keystore overrides opensearch_dashboards.yml — always update keystore for indexer creds
 - Manager wazuh-keystore (`/var/ossec/bin/wazuh-keystore -f indexer`) holds indexer creds for wazuh-modulesd
 - Filebeat keystore holds indexer creds for log shipping
 - securityadmin needs `--accept-red-cluster` flag to avoid timeout on cluster state wait
 - 63 agents active as of 2026-04-01
-- **Monitoring**: Auto-restart enabled in systemd, cron monitor runs every 5 min, UptimeKuma push monitor integrated
 
 ## Services & APIs
 | Service | URL | Key/Token |

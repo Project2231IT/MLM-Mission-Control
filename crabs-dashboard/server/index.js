@@ -35,10 +35,12 @@ function validateSession(req, res, next) {
 const app = express();
 const PORT = 3800;
 const WORKSPACE = '/home/jake/.openclaw/workspace';
+const SERVER_DIR = path.join(__dirname, '..');
+const PUBLIC_DIR = path.join(SERVER_DIR, 'public');
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(PUBLIC_DIR));
 
 // Login endpoint - returns session token
 app.post('/api/login', (req, res) => {
@@ -114,6 +116,11 @@ app.use('/api', (req, res, next) => {
     return res.status(401).end(); // SSE needs proper token
   }
   return res.status(401).json({ error: 'Unauthorized' });
+});
+
+// Root route - serve index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
 app.get('/api/core-files', async (req, res) => {
@@ -300,6 +307,12 @@ app.get('/api/integrations', async (req, res) => {
         name: 'ITFlow',
         status: 'active',
         note: 'helpdesk.project2231.com, ticketing',
+        health: 'GREEN'
+      },
+      {
+        name: 'Uptime Kuma',
+        status: 'active',
+        note: '172.16.201.15:3001, monitoring dashboard',
         health: 'GREEN'
       }
     ];

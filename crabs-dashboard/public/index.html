@@ -20,20 +20,6 @@
   </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen">
-  <script>
-    // Check authentication
-    const token = localStorage.getItem('crabsToken');
-    if (!token) {
-      window.location.href = '/login.html';
-    }
-
-    // Helper function for authenticated requests
-    async function authFetch(url, options = {}) {
-      const headers = options.headers || {};
-      headers['X-Session-Token'] = localStorage.getItem('crabsToken');
-      return fetch(url, { ...options, headers });
-    }
-  </script>
   <div class="container mx-auto px-4 py-6">
     <!-- Header -->
     <div class="crabs-gradient rounded-xl p-6 mb-6 shadow-2xl">
@@ -151,7 +137,25 @@
   </div>
 
   <script>
+    console.log('Dashboard script starting...');
     let eventSource = null;
+    let currentFile = null;
+
+    // Check authentication
+    const token = localStorage.getItem('crabsToken');
+    console.log('Token from localStorage:', token ? 'exists' : 'missing');
+    if (!token) {
+      console.log('No token, redirecting to login');
+      window.location.href = '/login.html';
+    }
+
+    // Helper function for authenticated requests
+    async function authFetch(url, options = {}) {
+      const headers = options.headers || {};
+      headers['X-Session-Token'] = localStorage.getItem('crabsToken');
+      console.log('AuthFetch called:', url);
+      return fetch(url, { ...options, headers });
+    }
 
     // Set current user
     document.getElementById('currentUser').textContent = localStorage.getItem('crabsUser') || 'Unknown';
@@ -164,35 +168,28 @@
     }
 
     async function refreshAll() {
-      await Promise.all([
-        loadStatus(),
-        loadCoreFiles(),
-        loadIntegrations(),
-        loadWorkspace(),
-        loadRecentMemories(),
-        loadRecentSessions(),
-        loadCron()
-      ]);
-    }
-
-    function setupSSE() {
-      const token = localStorage.getItem('crabsToken');
-      eventSource = new EventSource(`/api/events?token=${token}`);
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'update') {
-          refreshAll();
-        }
-      };
-      eventSource.onerror = () => {
-        console.log('SSE disconnected, reconnecting in 5s...');
-        setTimeout(setupSSE, 5000);
-      };
+      console.log('refreshAll() called');
+      try {
+        await Promise.all([
+          loadStatus().catch(err => console.error('loadStatus failed:', err)),
+          loadCoreFiles().catch(err => console.error('loadCoreFiles failed:', err)),
+          loadIntegrations().catch(err => console.error('loadIntegrations failed:', err)),
+          loadWorkspace().catch(err => console.error('loadWorkspace failed:', err)),
+          loadRecentMemories().catch(err => console.error('loadRecentMemories failed:', err)),
+          loadRecentSessions().catch(err => console.error('loadRecentSessions failed:', err)),
+          loadCron().catch(err => console.error('loadCron failed:', err))
+        ]);
+        console.log('All data loaded successfully');
+      } catch (err) {
+        console.error('Error in refreshAll:', err);
+      }
     }
 
     async function loadStatus() {
+      console.log('loadStatus() STARTING');
       try {
         const res = await authFetch('/api/status');
+        console.log('loadStatus response status:', res.status);
         const data = await res.json();
         document.getElementById('uptime').textContent = data.uptime;
         document.getElementById('memory').textContent = `${data.memory.used} / ${data.memory.total}`;
@@ -204,8 +201,10 @@
     }
 
     async function loadCoreFiles() {
+      console.log('loadCoreFiles() STARTING');
       try {
         const res = await authFetch('/api/core-files');
+        console.log('loadCoreFiles response status:', res.status);
         const files = await res.json();
         const container = document.getElementById('coreFiles');
         container.innerHTML = '';
@@ -240,6 +239,7 @@
     }
 
     async function loadIntegrations() {
+      console.log('loadIntegrations() called');
       try {
         const res = await authFetch('/api/integrations');
         const integrations = await res.json();
@@ -266,6 +266,7 @@
     }
 
     async function loadWorkspace() {
+      console.log('loadWorkspace() called');
       try {
         const res = await authFetch('/api/workspace');
         const workspace = await res.json();
@@ -292,6 +293,7 @@
     }
 
     async function loadRecentMemories() {
+      console.log('loadRecentMemories() called');
       try {
         const res = await authFetch('/api/recent-memories');
         const memories = await res.json();
@@ -313,6 +315,7 @@
     }
 
     async function loadRecentSessions() {
+      console.log('loadRecentSessions() called');
       try {
         const res = await authFetch('/api/recent-sessions');
         const sessions = await res.json();
@@ -336,6 +339,7 @@
     }
 
     async function loadCron() {
+      console.log('loadCron() called');
       try {
         const res = await authFetch('/api/cron');
         const data = await res.json();
@@ -344,19 +348,6 @@
         console.error('Failed to load cron:', err);
       }
     }
-
-    // Initial load
-    refreshAll();
-
-    // Setup SSE for real-time updates
-    setupSSE();
-
-    // Fallback poll if SSE fails
-    setInterval(() => {
-      if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
-        refreshAll();
-      }
-    }, 5000);
 
     // File Editor Modal Functions
     function openFileModal(filename) {
@@ -407,7 +398,7 @@
         if (data.success) {
           showToast('File saved successfully!');
           closeModal();
-          // Refresh the core files list
+          // Refresh core files list
           loadCoreFiles();
         } else {
           showToast('Error saving file: ' + (data.error || 'Unknown error'), 'error');
@@ -432,6 +423,36 @@
         toast.classList.add('hidden');
       }, 3000);
     }
+
+    function setupSSE() {
+      console.log('setupSSE() called');
+      const token = localStorage.getItem('crabsToken');
+      eventSource = new EventSource(`/api/events?token=${token}`);
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'update') {
+          refreshAll();
+        }
+      };
+      eventSource.onerror = () => {
+        console.log('SSE disconnected, reconnecting in 5s...');
+        setTimeout(setupSSE, 5000);
+      };
+    }
+
+    // Initial load
+    console.log('Starting initial load...');
+    refreshAll();
+
+    // Setup SSE for real-time updates
+    setupSSE();
+
+    // Fallback poll if SSE fails
+    setInterval(() => {
+      if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
+        refreshAll();
+      }
+    }, 5000);
   </script>
 </body>
 </html>

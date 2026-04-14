@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Mr. Crabs Control Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .crabs-gradient { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); }
+    .crabs-orange { color: #ff6b35; }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md p-6">
+    <div class="crabs-gradient rounded-xl p-8 shadow-2xl">
+      <div class="text-center mb-8">
+        <div class="text-6xl mb-4">🦀</div>
+        <h1 class="text-3xl font-bold mb-2">Mr. Crabs</h1>
+        <p class="text-gray-300">Control Center</p>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Email</label>
+          <input
+            type="email"
+            id="email"
+            required
+            class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none"
+            placeholder="it@project2231.com"
+          >
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">Password</label>
+          <input
+            type="password"
+            id="password"
+            required
+            class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none"
+            placeholder="•••••••"
+          >
+        </div>
+
+        <div id="error" class="hidden text-red-400 text-sm text-center"></div>
+
+        <button
+          type="submit"
+          class="w-full py-3 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition"
+        >
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const errorDiv = document.getElementById('error');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.token) {
+          localStorage.setItem('crabsToken', data.token);
+          localStorage.setItem('crabsUser', data.user);
+          window.location.href = '/';
+        } else {
+          errorDiv.textContent = data.error || 'Login failed';
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Connection error';
+        errorDiv.classList.remove('hidden');
+      }
+    });
+
+    // Check if already logged in
+    if (localStorage.getItem('crabsToken')) {
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

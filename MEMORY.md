@@ -37,6 +37,7 @@ Dock 17 · Miss Lucilles Marketplace · Miss Lucilles Cafe · ACME · ACME Healt
 - Filebeat keystore holds indexer creds for log shipping
 - securityadmin needs `--accept-red-cluster` flag to avoid timeout on cluster state wait
 - 63 agents active as of 2026-04-01
+- **Monitoring**: Auto-restart enabled in systemd, cron monitor runs every 5 min, UptimeKuma push monitor integrated
 
 ## Services & APIs
 | Service | URL | Key/Token |

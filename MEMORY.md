@@ -61,9 +61,11 @@ Dock 17 · Miss Lucilles Marketplace · Miss Lucilles Cafe · ACME · ACME Healt
 | Guest WiFi | 172.16.201.40:3700 | admin / P2231GuestAdmin |
 
 ## ITFlow Details
-- Decryption password: afLwp86rrzKWu3oen9G-ME8MxXt8DGsh
+- Decryption password: tVA0DR9vtvLPb0Xq7nv7m9leCl8cSVtN
+- Old API key (all clients): vHBWDCyf5-ncBd1bhYltNwrgi278qVpq (deprecated)
+- P2231-scoped API key: qe0XlhbYyn8Ugj3eeiPtIcaOh57Pm1Ly
 - Jake's user ID: 10 · contact IDs: 11 (P2231), 16 (TCF), 36 (ACME)
-- Always assign tickets to user 10
+- **Important:** API create.php uses $client_id from API key scope, NOT from POST data. Old key always created docs with client_id=0 (invisible in KB). Use P2231-scoped key for KB articles.
 
 ## Telegram Topics
 - Topic 2 — Argus & cameras
@@ -109,8 +111,10 @@ Everything runs natively on jakesopenclaw (no Docker/Portainer):
 - **Virtual server**: `/etc/freeradius/3.0/sites-enabled/grandstream-portal`
 - **SQL module**: `/etc/freeradius/3.0/mods-available/sql` → PostgreSQL localhost
 - **Accounting**: writes to `radacct` table (standard FreeRADIUS schema)
-- **Users file**: `/etc/freeradius/3.0/users` — single user `guest/guest`
+- **Users file**: `/etc/freeradius/3.0/users` — `DEFAULT Cleartext-Password := "guest"` accepts any username
 - **clients.conf**: 0.0.0.0/0 (open — Grandstream cloud IPs vary)
+- **Acct-Unique-Session-Id**: Auto-generated from `Acct-Session-Id + NAS-IP + NAS-Port` in preacct (Grandstream APs don't send it)
+- **safe_characters**: includes `%` for URL-encoded usernames
 - **Dictionary**: Grandstream VSAs defined (Vendor 267)
 
 ### gwn.cloud Config
@@ -146,14 +150,15 @@ Everything runs natively on jakesopenclaw (no Docker/Portainer):
 - Business config: `src/config/businesses.js` (colors, logos, names per location)
 - Systemd service: `/etc/systemd/system/guest-wifi-analytics.service`
 - FreeRADIUS config: `/etc/freeradius/3.0/`
-- GitHub: `https://github.com/Project2231IT/guest-analytics` (passwords stripped, .env.example for secrets)
+- GitHub: `https://github.com/Project2231IT/guest-analytics` (PAT in `~/.git-credentials`, passwords stripped, .env.example for secrets)
 
 ### Remaining Work
 - AHW splash page not deployed yet (no AP/SSID configured)
 - Test all splash pages end-to-end (only ACME and TCF tested live)
-- FreeRADIUS SQL module for auth (currently uses flat users file)
-- Dashboard guest list — verify all fields render correctly
+- FreeRADIUS SQL module for auth (currently uses flat users file with DEFAULT)
 - Clean up test data (guest id=1 "Test Test" with 7 visits)
+- Username %40 encoding — Grandstream sends URL-encoded @ in accounting. Consider decoding in dashboard display
+- Dashboard reverse proxy (wifi.project2231.com) caches JS aggressively — cache busters get rewritten
 
 ## Notes
 - First boot: 2026-03-23

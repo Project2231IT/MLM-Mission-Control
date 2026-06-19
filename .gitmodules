@@ -1,0 +1,3 @@
+[submodule "nvr"]
+	path = nvr
+	url = ./nvr
